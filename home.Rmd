@@ -5,10 +5,13 @@ output: html_document
 
 ##### Realizado por:
 
-- **Nestor Jardany Serrano Rojas**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_HBF) (En este repositorio se encuentran todos los archivos utilizados en el estudio)
-- **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/CamiloAguilar/SmallAreaEstimation_1) (En este repositorio se encuentran todos los archivos utilizados en el estudio)
-- **Alvaro Enrique Villaba Mendez**, [GitHub](https://github.com/AlvaroVillalba/SmallAreaEstimation_1) (En este repositorio se encuentran todos los archivos utilizados en el estudio)
+- **Nestor Jardany Serrano Rojas**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11) 
+- **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11)
+- **Alvaro Enrique Villaba Mendez**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11) 
 
+<br>
+
+- En el siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se encuentra el script [CienciasNaturalesSABER11.R](https://github.com/jardanys/SmallAreaEstimation_SABER11) y las bases de datos usadas en formato RDS.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -174,7 +177,7 @@ Para la estimación HBF se utilizó el dominio de Municipios. La varibale depend
 - Nivel Estrato Energia
 - Naturaleza del Colegio (Oficial, No Oficial)
 
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace]() se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
+Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
 
 ```{r HBF_table, echo=FALSE}
 kable(readRDS("./rds/est_mean_HBF.rds"), "html") %>%
@@ -277,7 +280,7 @@ Para la estimación HBF se utilizó el dominio de Municipios. La varibale depend
 - Nivel Estrato Energia
 - Naturaleza del Colegio (Oficial, No Oficial)
 
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace]() se realiza la estimación para los 1070 municipios no observados. En la siguiente tabla se muestra la estimación de todos los municipios (los primeros 6 registros) y la gráfica de todos los coeficientes de variación, mostrando unos cve confiables y todos menores a 5%.
+Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. En la siguiente tabla se muestra la estimación de todos los municipios (los primeros 6 registros) y la gráfica de todos los coeficientes de variación, mostrando unos cve confiables y todos menores a 5%.
 
 ```{r HBF_table_dom, echo=FALSE}
 kable(readRDS("./rds/head_resultados_HBF.rds"), "html") %>%
@@ -376,7 +379,7 @@ Para la estimación HBF se utilizó el dominio de Municipios. La varibale depend
 - Nivel Estrato Energia
 - Naturaleza del Colegio (Oficial, No Oficial)
 
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace]() se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
+Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
 
 ```{r HBF_tabletot, echo=FALSE}
 kable(readRDS("./rds/est_tot_HBF.rds"), "html") %>%
@@ -479,7 +482,7 @@ Para la estimación HBF se utilizó el dominio de Municipios. La varibale depend
 - Nivel Estrato Energia
 - Naturaleza del Colegio (Oficial, No Oficial)
 
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace]() se realiza la estimación para los 1070 municipios no observados. En la siguiente tabla se muestra la estimación de todos los municipios (los primeros 6 registros) y la gráfica de todos los coeficientes de variación, mostrando unos cve confiables y todos menores a 5%.
+Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. En la siguiente tabla se muestra la estimación de todos los municipios (los primeros 6 registros) y la gráfica de todos los coeficientes de variación, mostrando unos cve confiables y todos menores a 5%.
 
 ```{r HBF_table_domtot, echo=FALSE}
 kable(readRDS("./rds/head_resultados_HBF_tot.rds"), "html") %>%
