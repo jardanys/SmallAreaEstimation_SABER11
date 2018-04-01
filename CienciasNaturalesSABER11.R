@@ -14,21 +14,21 @@ options(survey.lonely.psu="adjust")
 # 1. MUESTRA PRUEBAS SABER ####
 #********************************************************************
 
-est <- readRDS("estudiantes.rds")
-muestra3etapas <- readRDS("muestra3etapas.rds")
+est <- readRDS("./data/estudiantes.rds")
+muestraXest <- readRDS("./data/EC1muestraXest.rds")
 names(est)
 
-# HACER EL DISEÑO MUESTRAL UTILICE EL MISMO DEL PROFESOR PERO NO SEA ASÍ
+# HACER EL DISEÑO MUESTRAL UTILICE EL MISMO DEL PROFESOR PERO NO ES ASÍ
 
-diseno_muestral <- svydesign(ids = ~CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
+diseno_muestral <- svydesign(ids = ~ CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              strata = ~estrato_mpio + EstratoColegio,
-                             fpc = ~ NI + NII + N_i, data = muestra3etapas,
+                             fpc = ~ NI + NII + N_i, data = EC1muestraXest,
                              nest = T)
 
 # Distribución de la variable total en la población
 hist(est$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Frecuencia", main = "Población", col = "orange")
 # Distribución de la variable total en la muestra
-hist(muestra3etapas$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Frecuencia", main = "Muestra", col = "orange")
+hist(muestraXest$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Frecuencia", main = "Muestra", col = "orange")
 
 #********************************************************************
 # 2. ESTIMADOR GLOBAL DE LA MEDIA DEL PUNTAJE CIENCIAS NATURALES ####
@@ -48,7 +48,7 @@ names(Est_glo_medi_dir) <- c("mean", "se", "cve")
 saveRDS(Est_glo_medi_dir, "./rds/Est_glo_medi_dir.rds")
 
 #********************************************************************
-# 2.2. ESTIMADOR GLOBAL DE LA MEDIA SINTÉTICO ####
+# 2.2. ESTIMADOR GLOBAL DE LA MEDIA - SINTÉTICO ####
 #********************************************************************
 
 # Estimación
@@ -129,15 +129,15 @@ cor(est[,c(18:22)])
 
 # Calibrar usando MATEMATICAS_PUNT
 
-muestra3etapas$fexp <- weights(diseno_muestral)
+muestraXest$fexp <- weights(diseno_muestral)
 
-mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestra3etapas, 
+mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestraXest, 
                weights = fexp)
 
 saveRDS(mod1_mue, "./rds/mod1_mue_greg_mean.rds")
 
 summary(mod1_mue)
-plot(muestra3etapas$CIENCIAS_NATURALES_PUNT ~ muestra3etapas$MATEMATICAS_PUNT, xlab="Matemáticas",
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT, xlab="Matemáticas",
      ylab = "Ciencias Naturales", main = "Ciencias Naturales vs Matemáticas", col="orange")
 abline(mod1_mue, col="red")
 
@@ -146,8 +146,8 @@ Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
 diseno_calibrado <- calibrate(diseno_muestral, ~ MATEMATICAS_PUNT, calfun = "linear" , 
                               population = Xu)
 
-muestra3etapas$pesocalib <- weights(diseno_calibrado)
-g_k <- muestra3etapas$pesocalib / muestra3etapas$fexp
+muestraXest$pesocalib <- weights(diseno_calibrado)
+g_k <- muestraXest$pesocalib / muestraXest$fexp
 # Mediana y promedio cercanos a 1
 summary(g_k)
 
@@ -198,16 +198,16 @@ Infoaux <- est %>% group_by(CODIGOMUNICIPIO) %>%
 
 # Convertir en factores las categoricas de la muestra
 
-muestra3etapas$CALENDARIO <- as.factor(muestra3etapas$CALENDARIO)
-muestra3etapas$NATURALEZA <- as.factor(muestra3etapas$NATURALEZA)
-muestra3etapas$JORNADA <- as.factor(muestra3etapas$JORNADA)
-muestra3etapas$PERS_GENERO <- as.factor(muestra3etapas$PERS_GENERO)
-muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA <- as.factor(muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA)
-muestra3etapas$FINS_PISOSHOGAR <- as.factor(muestra3etapas$FINS_PISOSHOGAR)
-muestra3etapas$FINS_TIENEINTERNET <- as.factor(muestra3etapas$FINS_TIENEINTERNET)
-muestra3etapas$FINS_TIENECOMPUTADOR <- as.factor(muestra3etapas$FINS_TIENECOMPUTADOR)
-muestra3etapas$FINS_TIENEAUTOMOVILPARTICULAR <- as.factor(muestra3etapas$FINS_TIENEAUTOMOVILPARTICULAR)
-muestra3etapas$INGLES_DESEM <- as.factor(muestra3etapas$INGLES_DESEM)
+muestraXest$CALENDARIO <- as.factor(muestraXest$CALENDARIO)
+muestraXest$NATURALEZA <- as.factor(muestraXest$NATURALEZA)
+muestraXest$JORNADA <- as.factor(muestraXest$JORNADA)
+muestraXest$PERS_GENERO <- as.factor(muestraXest$PERS_GENERO)
+muestraXest$FINS_ESTRATOVIVIENDAENERGIA <- as.factor(muestraXest$FINS_ESTRATOVIVIENDAENERGIA)
+muestraXest$FINS_PISOSHOGAR <- as.factor(muestraXest$FINS_PISOSHOGAR)
+muestraXest$FINS_TIENEINTERNET <- as.factor(muestraXest$FINS_TIENEINTERNET)
+muestraXest$FINS_TIENECOMPUTADOR <- as.factor(muestraXest$FINS_TIENECOMPUTADOR)
+muestraXest$FINS_TIENEAUTOMOVILPARTICULAR <- as.factor(muestraXest$FINS_TIENEAUTOMOVILPARTICULAR)
+muestraXest$INGLES_DESEM <- as.factor(muestraXest$INGLES_DESEM)
 
 Tamanos <- Infoaux[,c("CODIGOMUNICIPIO", "N_d")]
 names(Infoaux)
@@ -217,13 +217,13 @@ Medias <- Infoaux[,c("CODIGOMUNICIPIO", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$CODIGOMUNICIPIO <- as.character(Tamanos$CODIGOMUNICIPIO)
 Medias$CODIGOMUNICIPIO <- as.character(Medias$CODIGOMUNICIPIO)
-muestra3etapas$CODIGOMUNICIPIO <- as.character(muestra3etapas$CODIGOMUNICIPIO)
+muestraXest$CODIGOMUNICIPIO <- as.character(muestraXest$CODIGOMUNICIPIO)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
                 dom = CODIGOMUNICIPIO, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 ?pbmseBHF
 # Estimaci�n para dominios observados
 BHF$est$eblup
@@ -270,7 +270,7 @@ head(Prom_dominios)
 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
-                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestra3etapas)
+                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestraXest)
 
 
 #\hat{V}(\hat{\bodysymbol{\beta}}):
@@ -280,7 +280,7 @@ Varest_betaest <- vcov(modelo_mixto)
 sigma2est_u <- BHF[[1]]$fit$refvar #29.66217^2 #EN modelo_mixto observese que es la misma estimacion
 
 # Identificar los dominios no observados
-dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestra3etapas$CODIGOMUNICIPIO))]
+dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestraXest$CODIGOMUNICIPIO))]
 Xbar_d_noobs <- Xbar_d[row.names(Xbar_d) %in% dominios_noobservados,]
 MSE_DominiosNoobservados <- diag((Xbar_d_noobs %*% Varest_betaest %*% t(Xbar_d_noobs)) + sigma2est_u)
 MSE_DominiosNoobservados <- as.table(MSE_DominiosNoobservados)
@@ -350,13 +350,13 @@ Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
 Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestra3etapas$NATURALEZA <- as.character(muestra3etapas$NATURALEZA)
+muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
                 dom = NATURALEZA, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 
@@ -466,17 +466,17 @@ saveRDS(est_dom_tot_razon, "./rds/est_dom_tot_razon.rds")
 
 table(est$NATURALEZA)
 table(est$FINS_ESTRATOVIVIENDAENERGIA)
-muestra3etapas$natu_estrato <- paste(muestra3etapas$NATURALEZA, muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA
+muestraXest$natu_estrato <- paste(muestraXest$NATURALEZA, muestraXest$FINS_ESTRATOVIVIENDAENERGIA
                                      , sep="_")
 
 est$natu_estrato <- paste(est$NATURALEZA, est$FINS_ESTRATOVIVIENDAENERGIA
                                      , sep="_")
 
-table(muestra3etapas$natu_estrato)
+table(muestraXest$natu_estrato)
 
 diseno_muestral <- svydesign(ids = ~CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              strata = ~estrato_mpio + EstratoColegio,
-                             fpc = ~ NI + NII + N_i, data = muestra3etapas,
+                             fpc = ~ NI + NII + N_i, data = muestraXest,
                              nest = T)
 
 naturaleza_estrato_est <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, 
@@ -498,13 +498,13 @@ cor(est[,c(18:22)])
 
 # Calibrar usando MATEMATICAS_PUNT
 
-muestra3etapas$fexp <- weights(diseno_muestral)
+muestraXest$fexp <- weights(diseno_muestral)
 
-mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestra3etapas, 
+mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestraXest, 
                weights = fexp)
 
 summary(mod1_mue)
-plot(muestra3etapas$CIENCIAS_NATURALES_PUNT ~ muestra3etapas$MATEMATICAS_PUNT)
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT)
 abline(mod1_mue)
 
 Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
@@ -512,8 +512,8 @@ Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
 diseno_calibrado <- calibrate(diseno_muestral, ~ MATEMATICAS_PUNT, calfun = "linear" , 
                               population = Xu)
 
-muestra3etapas$pesocalib <- weights(diseno_calibrado)
-g_k <- muestra3etapas$pesocalib / muestra3etapas$fexp
+muestraXest$pesocalib <- weights(diseno_calibrado)
+g_k <- muestraXest$pesocalib / muestraXest$fexp
 # Mediana y promedio cercanos a 1
 summary(g_k)
 
@@ -556,16 +556,16 @@ Infoaux <- est %>% group_by(CODIGOMUNICIPIO) %>%
 
 # Convertir en factores las categoricas de la muestra
 
-muestra3etapas$CALENDARIO <- as.factor(muestra3etapas$CALENDARIO)
-muestra3etapas$NATURALEZA <- as.factor(muestra3etapas$NATURALEZA)
-muestra3etapas$JORNADA <- as.factor(muestra3etapas$JORNADA)
-muestra3etapas$PERS_GENERO <- as.factor(muestra3etapas$PERS_GENERO)
-muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA <- as.factor(muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA)
-muestra3etapas$FINS_PISOSHOGAR <- as.factor(muestra3etapas$FINS_PISOSHOGAR)
-muestra3etapas$FINS_TIENEINTERNET <- as.factor(muestra3etapas$FINS_TIENEINTERNET)
-muestra3etapas$FINS_TIENECOMPUTADOR <- as.factor(muestra3etapas$FINS_TIENECOMPUTADOR)
-muestra3etapas$FINS_TIENEAUTOMOVILPARTICULAR <- as.factor(muestra3etapas$FINS_TIENEAUTOMOVILPARTICULAR)
-muestra3etapas$INGLES_DESEM <- as.factor(muestra3etapas$INGLES_DESEM)
+muestraXest$CALENDARIO <- as.factor(muestraXest$CALENDARIO)
+muestraXest$NATURALEZA <- as.factor(muestraXest$NATURALEZA)
+muestraXest$JORNADA <- as.factor(muestraXest$JORNADA)
+muestraXest$PERS_GENERO <- as.factor(muestraXest$PERS_GENERO)
+muestraXest$FINS_ESTRATOVIVIENDAENERGIA <- as.factor(muestraXest$FINS_ESTRATOVIVIENDAENERGIA)
+muestraXest$FINS_PISOSHOGAR <- as.factor(muestraXest$FINS_PISOSHOGAR)
+muestraXest$FINS_TIENEINTERNET <- as.factor(muestraXest$FINS_TIENEINTERNET)
+muestraXest$FINS_TIENECOMPUTADOR <- as.factor(muestraXest$FINS_TIENECOMPUTADOR)
+muestraXest$FINS_TIENEAUTOMOVILPARTICULAR <- as.factor(muestraXest$FINS_TIENEAUTOMOVILPARTICULAR)
+muestraXest$INGLES_DESEM <- as.factor(muestraXest$INGLES_DESEM)
 
 Tamanos <- Infoaux[,c("CODIGOMUNICIPIO", "N_d")]
 names(Infoaux)
@@ -575,13 +575,13 @@ Medias <- Infoaux[,c("CODIGOMUNICIPIO", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$CODIGOMUNICIPIO <- as.character(Tamanos$CODIGOMUNICIPIO)
 Medias$CODIGOMUNICIPIO <- as.character(Medias$CODIGOMUNICIPIO)
-muestra3etapas$CODIGOMUNICIPIO <- as.character(muestra3etapas$CODIGOMUNICIPIO)
+muestraXest$CODIGOMUNICIPIO <- as.character(muestraXest$CODIGOMUNICIPIO)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
                 dom = CODIGOMUNICIPIO, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 BHF$est$eblup
@@ -628,7 +628,7 @@ head(Prom_dominios)
 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
-                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestra3etapas)
+                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestraXest)
 
 
 #\hat{V}(\hat{\bodysymbol{\beta}}):
@@ -638,7 +638,7 @@ Varest_betaest <- vcov(modelo_mixto)
 sigma2est_u <- BHF[[1]]$fit$refvar #29.66217^2 #EN modelo_mixto observese que es la misma estimacion
 
 # Identificar los dominios no observados
-dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestra3etapas$CODIGOMUNICIPIO))]
+dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestraXest$CODIGOMUNICIPIO))]
 Xbar_d_noobs <- Xbar_d[row.names(Xbar_d) %in% dominios_noobservados,]
 MSE_DominiosNoobservados <- diag((Xbar_d_noobs %*% Varest_betaest %*% t(Xbar_d_noobs)) + sigma2est_u)
 MSE_DominiosNoobservados <- as.table(MSE_DominiosNoobservados)
@@ -707,13 +707,13 @@ Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
 Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestra3etapas$NATURALEZA <- as.character(muestra3etapas$NATURALEZA)
+muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
                 dom = NATURALEZA, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 BHF$est$eblup
@@ -820,13 +820,13 @@ cor(est[,c(18:22)])
 
 # Calibrar usando MATEMATICAS_PUNT
 
-muestra3etapas$fexp <- weights(diseno_muestral)
+muestraXest$fexp <- weights(diseno_muestral)
 
-mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestra3etapas, 
+mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestraXest, 
                weights = fexp)
 
 summary(mod1_mue)
-plot(muestra3etapas$CIENCIAS_NATURALES_PUNT ~ muestra3etapas$MATEMATICAS_PUNT)
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT)
 abline(mod1_mue)
 
 Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
@@ -834,8 +834,8 @@ Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
 diseno_calibrado <- calibrate(diseno_muestral, ~ MATEMATICAS_PUNT, calfun = "linear" , 
                               population = Xu)
 
-muestra3etapas$pesocalib <- weights(diseno_calibrado)
-g_k <- muestra3etapas$pesocalib / muestra3etapas$fexp
+muestraXest$pesocalib <- weights(diseno_calibrado)
+g_k <- muestraXest$pesocalib / muestraXest$fexp
 # Mediana y promedio cercanos a 1
 summary(g_k)
 
@@ -882,13 +882,13 @@ Medias <- Infoaux[,c("CODIGOMUNICIPIO", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$CODIGOMUNICIPIO <- as.character(Tamanos$CODIGOMUNICIPIO)
 Medias$CODIGOMUNICIPIO <- as.character(Medias$CODIGOMUNICIPIO)
-muestra3etapas$CODIGOMUNICIPIO <- as.character(muestra3etapas$CODIGOMUNICIPIO)
+muestraXest$CODIGOMUNICIPIO <- as.character(muestraXest$CODIGOMUNICIPIO)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
                 dom = CODIGOMUNICIPIO, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 
 # Estimaci�n para dominios observados
@@ -936,7 +936,7 @@ head(Prom_dominios)
 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
-                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestra3etapas)
+                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestraXest)
 
 
 #\hat{V}(\hat{\bodysymbol{\beta}}):
@@ -946,7 +946,7 @@ Varest_betaest <- vcov(modelo_mixto)
 sigma2est_u <- BHF[[1]]$fit$refvar #29.66217^2 #EN modelo_mixto observese que es la misma estimacion
 
 # Identificar los dominios no observados
-dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestra3etapas$CODIGOMUNICIPIO))]
+dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestraXest$CODIGOMUNICIPIO))]
 Xbar_d_noobs <- Xbar_d[row.names(Xbar_d) %in% dominios_noobservados,]
 MSE_DominiosNoobservados <- diag((Xbar_d_noobs %*% Varest_betaest %*% t(Xbar_d_noobs)) + sigma2est_u)
 MSE_DominiosNoobservados <- as.table(MSE_DominiosNoobservados)
@@ -1014,13 +1014,13 @@ Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
 Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestra3etapas$NATURALEZA <- as.character(muestra3etapas$NATURALEZA)
+muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
                 dom = NATURALEZA, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 BHF$est$eblup
@@ -1127,17 +1127,17 @@ sqrt(Var_Y_ratio) / Y_ratio * 100
 # 5.4. ESTIMADOR DOMINIOS DEL TOTAL POSESTRATIFICADO ####
 #********************************************************************
 
-muestra3etapas$natu_estrato <- paste(muestra3etapas$NATURALEZA, muestra3etapas$FINS_ESTRATOVIVIENDAENERGIA
+muestraXest$natu_estrato <- paste(muestraXest$NATURALEZA, muestraXest$FINS_ESTRATOVIVIENDAENERGIA
                                      , sep="_")
 
 est$natu_estrato <- paste(est$NATURALEZA, est$FINS_ESTRATOVIVIENDAENERGIA
                           , sep="_")
 
-table(muestra3etapas$natu_estrato)
+table(muestraXest$natu_estrato)
 
 diseno_muestral <- svydesign(ids = ~CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              strata = ~estrato_mpio + EstratoColegio,
-                             fpc = ~ NI + NII + N_i, data = muestra3etapas,
+                             fpc = ~ NI + NII + N_i, data = muestraXest,
                              nest = T)
 
 naturaleza_estrato_est <- svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, diseno_muestral, FUN=svytotal)
@@ -1165,13 +1165,13 @@ cor(est[,c(18:22)])
 
 # Calibrar usando MATEMATICAS_PUNT
 
-muestra3etapas$fexp <- weights(diseno_muestral)
+muestraXest$fexp <- weights(diseno_muestral)
 
-mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestra3etapas, 
+mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestraXest, 
                weights = fexp)
 
 summary(mod1_mue)
-plot(muestra3etapas$CIENCIAS_NATURALES_PUNT ~ muestra3etapas$MATEMATICAS_PUNT)
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT)
 abline(mod1_mue)
 
 Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
@@ -1179,8 +1179,8 @@ Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
 diseno_calibrado <- calibrate(diseno_muestral, ~ MATEMATICAS_PUNT, calfun = "linear" , 
                               population = Xu)
 
-muestra3etapas$pesocalib <- weights(diseno_calibrado)
-g_k <- muestra3etapas$pesocalib / muestra3etapas$fexp
+muestraXest$pesocalib <- weights(diseno_calibrado)
+g_k <- muestraXest$pesocalib / muestraXest$fexp
 # Mediana y promedio cercanos a 1
 summary(g_k)
 
@@ -1230,13 +1230,13 @@ Medias <- Infoaux[,c("CODIGOMUNICIPIO", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$CODIGOMUNICIPIO <- as.character(Tamanos$CODIGOMUNICIPIO)
 Medias$CODIGOMUNICIPIO <- as.character(Medias$CODIGOMUNICIPIO)
-muestra3etapas$CODIGOMUNICIPIO <- as.character(muestra3etapas$CODIGOMUNICIPIO)
+muestraXest$CODIGOMUNICIPIO <- as.character(muestraXest$CODIGOMUNICIPIO)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
                 dom = CODIGOMUNICIPIO, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 BHF$est$eblup
@@ -1283,7 +1283,7 @@ head(Prom_dominios)
 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
-                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestra3etapas)
+                    random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestraXest)
 
 
 #\hat{V}(\hat{\bodysymbol{\beta}}):
@@ -1293,7 +1293,7 @@ Varest_betaest <- vcov(modelo_mixto)
 sigma2est_u <- BHF[[1]]$fit$refvar #29.66217^2 #EN modelo_mixto observese que es la misma estimacion
 
 # Identificar los dominios no observados
-dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestra3etapas$CODIGOMUNICIPIO))]
+dominios_noobservados <- unique(est$CODIGOMUNICIPIO)[!(unique(est$CODIGOMUNICIPIO) %in% unique(muestraXest$CODIGOMUNICIPIO))]
 Xbar_d_noobs <- Xbar_d[row.names(Xbar_d) %in% dominios_noobservados,]
 MSE_DominiosNoobservados <- diag((Xbar_d_noobs %*% Varest_betaest %*% t(Xbar_d_noobs)) + sigma2est_u)
 MSE_DominiosNoobservados <- as.table(MSE_DominiosNoobservados)
@@ -1371,13 +1371,13 @@ Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
 
 Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
 Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestra3etapas$NATURALEZA <- as.character(muestra3etapas$NATURALEZA)
+muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
 
 BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
                 dom = NATURALEZA, 
                 meanxpop = Medias,
                 popnsize = Tamanos,
-                B = 200, data = muestra3etapas)
+                B = 200, data = muestraXest)
 
 # Estimaci�n para dominios observados
 BHF$est$eblup
