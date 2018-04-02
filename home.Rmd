@@ -1,15 +1,15 @@
 ---
-title: "SAE - Puntaje Ciencias Naturales PRESABER"
+title: "Estimación de puntajes sobre pruebas Saber 11 en algunos dominios de interés"
 output: html_document
 ---
 
 ##### Realizado por:
 
 - **Nestor Jardany Serrano Rojas**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11) 
-- **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11)
+- **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/CamiloAguilar/SmallAreaEstimation_SABER11)
 - **Alvaro Enrique Villaba Mendez**, [GitHub](https://github.com/jardanys/SmallAreaEstimation_SABER11) 
 
-<br>
+<br/>
 
 - En el siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se encuentra el script [CienciasNaturalesSABER11.R](https://github.com/jardanys/SmallAreaEstimation_SABER11) y las bases de datos usadas en formato RDS.
 
@@ -17,7 +17,7 @@ output: html_document
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 info.date<-format(Sys.time(), "%Y-%m")
 fileConn<-file("footer2.html")
-msj<-paste("<p>", info.date, "Realizado por: Nestor Jardany Serrano Rojas</p>")
+msj<-paste("<br/><p>", info.date, "Universidad Santo Tomas</p>")
 writeLines(c(msj,"<p>Copyright &copy; All rights reserved.</p>"),fileConn)
 close(fileConn)
 ```
@@ -34,60 +34,89 @@ options(scipen = 999)
 options(survey.lonely.psu="adjust")
 ```
 
-<br>
+<br/>
 
-## Introducción
+## Las pruebas Saber 
 
-Este documento tiene como objetivo mostrar los diferentes métodos de estimación de muestreo (Incluyendo muestreo de áreas pequeñas SAE) para la variable Ciencias Naturales de las pruebas SABER 11. Realizadas en todos los municipios de Colombia. La base datos tiene las siguientes variables:
+El examen de Estado de la educación media, Icfes Saber 11°, surgió en 1968 con el propósito de apoyar a las instituciones de educación superior en sus procesos de selección y admisión de estudiantes y en la década de los ochenta llegó a evaluar a todos los estudiantes de undécimo grado. Dicha prueba es diseñada por el Instituto Colombiano para la Evaluación de la Educación, conocido por las siglas ICFES (de Instituto Colombiano para el Fomento de la Educación Superior), el cual comprueba el grado de desarrollo de las competencias de los estudiantes que están por finalizar el grado undécimo de la Educación Media. Consta de cinco pruebas:
 
-```{r Muestra_, include=FALSE}
-est <- readRDS("estudiantes.rds")
-muestra3etapas <- readRDS("muestra3etapas.rds")
-names(est)
-```
+* Lectura crítica
+* Matemáticas
+* Sociales y ciudadanas
+* Ciencias naturales
+* Inglés
 
-La variable objeto de estudio es el puntaje de Ciencias Naturales. Primero se obtiene una muestra en 3 etapas por departamento, municipio y colegio. Segundo se estima el promedio global por los sigueintes métodos de estimación:
+Los objetivos de este examen se resumen en los siguientes: 
 
-- Estimación Directo.
-- Estimación Sintético.
+ * Seleccionar estudiantes para la educación superior.
+ * Monitorear la calidad de la formación que ofrecen los establecimientos de educación media.
+ * Producir información para la estimación del valor agregado de la educación superior.
+
+El examen se ha centrado en la evaluación de competencias entendidas como un saber hacer en contexto, lo cual implica que se movilicen conocimientos y habilidades ante distintas situaciones de evaluación. Aquellas se definen en correspondencia con los Estándares Básicos de Competencias del Ministerio de Educación Nacional y los requerimientos de formación en la Educación Superior.
+
+Este examen proporciona resultados e información a distintos niveles:
+
+ * a los estudiantes les ofrece elementos para su autoevaluación.
+ * a las instituciones de educación superior les brinda criterios para sus procesos de admisión.
+ * a los establecimientos educativos les proporciona información para los procesos de autoevaluación y orientación de sus prácticas pedagógicas.
+ * a las autoridades educativas les brinda información confiable para construir indicadores de calidad.
+
+## Estudio de caso
+
+El ICFES ha disponibilizado el acceso a los resultados de la pruebas a través de su sistema [FTP](http://www.icfes.gov.co/itemlist/category/333-acceso-a-bases-de-datos). En él describe el contenido de las bases de datos, los documentos de apoyo y cómo consultarlos, los análisis que se pueden hacer e información que es fundamental tener en cuenta al momento de utilizar estos en investigaciones.
+
+Este documento tiene como objetivo lograr estimaciones los mas acertadas posible, de los resultados particulares sobre la prueba específica para **Ciencias naturales** sobre algunos dominios de interés, a partir de la aplicación de diferentes métodos de estimación por muestreo, incluyendo muestreo de áreas pequeñas 'SAE'. Definiremos a nuestra población de estudio, como el resultado de las pruebas para un periodo particular. 
+
+Para lograr nuestro objetivo primero nos concentramos en obtener una muestra copleja estratificada. Segundo se estima el promedio global por los sigueintes métodos de estimación:
+
+- Estimación Directa.
+- Estimación Sintética.
 - Estimación por Razón.
-- Estimación Post-Estratificado.
+- Estimación Post-Estratificada.
 - Estimación GREG.
 - Estimación HBF.
 
-Tercero se estima el promedio de la variable Ciencias Naturales por dominios, de la sigueinte manera:
+Tercero se estima el promedio de los resultados de las pruebas específicas para Ciencias Naturales por dominios, de la siguiente manera:
 
-- Estimación Directo. -> Dominio: Naturaleza
-- Estimación Sintético. -> Dominio: Naturaleza
-- Estimación por Razón. -> Auxiliar: Sociales
-- Estimación Post-Estratificado. -> Post-Estrato: Naturaleza_Estrato
-- Estimación GREG. -> Auxiliar: Matemáticas
-- Estimación HBF. -> Dominio: Municipio
+- Estimación Directa: dominio definido por la naturaleza del colegio (oficial / No oficial).
+- Estimación Sintético: dominio definido por la naturaleza del colegio.
+- Estimación por Razón: Usando como variable auxiliar el resultado poblacional de las pruebas Sociales y ciudadanas.
+- Estimación Post-Estratificado: se define 'Naturaleza_Estrato' como variable de Post-Estratificación .
+- Estimación GREG: Usando como variable auxiliar el resultado poblacional de las pruebas de Matemáticas.
+- Estimación HBF: dominio definido por el municipio del colegio.
 
-Cuarto se estima el global de la variable Ciencias naturales por los métodos de estimación mencionados anteriormente y por último se estima el global de Ciencias Natuales por dominios en el mismo orden del tercer item. Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. Todos los métodos muestran mejor cve que el estimador directo.
+Cuarto se estima el global de la variable Ciencias naturales por los métodos de estimación mencionados anteriormente y por último se estima el global de Ciencias Natuales por dominios en el mismo orden del tercer item. Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. Todos los métodos muestran mejor coeficiente de variación respecto al 
+estimador directo.
 
-<br>
+En general, los datos disponibles están descritos bajo las siguientes variables:
 
-## 1. Población vs Muestra
-
-La población es de 535.254 estudiantes de diferentes colegios y municipios de Colombia. La muestra tiene 5.556 estudiantes de 28 municipios. 
-
-```{r Muestra, include=FALSE}
-est <- readRDS("estudiantes.rds")
-muestra3etapas <- readRDS("muestra3etapas.rds")
+```{r muestra, echo=FALSE}
+est <- readRDS("./data/estudiantes.rds")
+muestraXest <- readRDS("./data/EC1muestraXest.rds")
+names(muestraXest)
 ```
 
-<br>
+<br/>
 
-A continuación se muestra la distribución de la variable Ciencias Naturales en la población y en la muestra.
+## 1. Definición de la muestra
+
+La población cuenta con los resultados para 535.254 estudiantes de los diferentes colegios del territorio colombiano, sobre la cual se ha definido un diseño muestral complejo de 3 etapas. Se han tomado los municipios como unidad primaria de muestreo, sobre los cuales se ha construído una estratificación óptima a partir del método Lavallee-Hidiroglou generalizado, usando el número de estudiantes como variable de estratificación y con un coeficiente de variación objetivo de 0.03. Sobre cada estrato se ha seleccionado una muestra de unidades aleatorio simple sin reemplazamiento (MAS).
+
+En la segunda etapa se toman los colegios como unidad secundaria de muestreo, sobre el cual se aplicó una estratificación Lavallee-Hidiroglou generalizado, con el número de colegios por municipio y el estrato anterior como variable de estratificación. Sobre cada estrato resultante se aplica MAS.
+
+Por último se define como unidad terciaria a los estudiantes, cuya selección resulta de la aplicación MAS.
+
+El desarrollo total de la muestra puede detallarse en el script [Diseño_Muestral_EC1.R](https://github.com/CamiloAguilar/SmallAreaEstimation_SABER11/blob/master/Diseno_Muestral_EC1.R) disponible en el repositorio web y que hace parte tel presente trabajo.
+
+Finalmente la muestra obtenida, contiene resultados para 5.556 estudiantes, a partir de los cuales en adelante se desarrollarán las esimaciones mencionadas anteriormente. A continuación podemos observar la distribución de la variable de interés tanto en la población como en la muestra, lo que en principio podría tomarse como una prueba gráfica calidad de la muestra seleccionada:
 
 ```{r hist, echo=FALSE}
 par(mfrow=c(1,2))
-hist(est$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Frecuencia", main = "Población", col = "orange")
-hist(muestra3etapas$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Frecuencia", main = "Muestra", col = "red")
+hist(est$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Densidad", main = "Población", col = "orange", freq=F)
+hist(muestraXest$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", ylab = "Densidad", main = "Muestra", col = "red", freq=F)
 ```
 
-<br>
+<br/>
 
 ## 2. Estimador global del promedio del puntaje de Ciencias Naturales 
 
@@ -156,7 +185,7 @@ kable(readRDS("./rds/Est_glo_medi_dir.rds"), "html") %>%
 Para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
 
 ```{r greg, echo=FALSE}
-plot(muestra3etapas$CIENCIAS_NATURALES_PUNT ~ muestra3etapas$MATEMATICAS_PUNT, xlab="Matemáticas",
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT, xlab="Matemáticas",
      ylab = "Ciencias Naturales", main = "Ciencias Naturales vs Matemáticas", col="orange")
 abline(readRDS("./rds/mod1_mue_greg_mean.rds"), col="red")
 ```
