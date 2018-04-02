@@ -22,7 +22,7 @@ names(est)
 
 diseno_muestral <- svydesign(ids = ~ CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              strata = ~estrato_mpio + EstratoColegio,
-                             fpc = ~ NI + NII + N_i, data = EC1muestraXest,
+                             fpc = ~ NI + NII + N_i, data = muestraXest,
                              nest = T)
 
 # Distribución de la variable total en la población
@@ -224,8 +224,8 @@ BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRAT
                 meanxpop = Medias,
                 popnsize = Tamanos,
                 B = 200, data = muestraXest)
-?pbmseBHF
-# Estimaci�n para dominios observados
+#?pbmseBHF
+# Estimación para dominios observados
 BHF$est$eblup
 
 # Estimaci�n del error cuadr�tico medio
@@ -266,7 +266,7 @@ Prom_dominios_observados <- BHF$est$eblup
 Prom_dominios <- merge(Prom_dominios, Prom_dominios_observados, by = "domain", all.x = T)
 names(Prom_dominios)[1] <- "MUNICIPIO"
 head(Prom_dominios)
-# Estimaci�n MSE para dominios no observados 
+# Estimación MSE para dominios no observados 
 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
