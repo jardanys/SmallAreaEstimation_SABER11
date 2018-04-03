@@ -11,7 +11,7 @@ output: html_document
 
 <br/>
 
-- En el siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se encuentra el script [CienciasNaturalesSABER11.R](https://github.com/jardanys/SmallAreaEstimation_SABER11) y las bases de datos usadas en formato RDS.
+Todo el contenido (datos, scripts, resultados etc) de esta presentación puede detallarse en el repositorio disponible en el siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11). Los datos utilizados están disponibles en formato RDS.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -34,10 +34,10 @@ options(scipen = 999)
 options(survey.lonely.psu="adjust")
 ```
 
-<br/>
+<br/><br/>
 
 ## Las pruebas Saber 
-
+<br/>
 El examen de Estado de la educación media, Icfes Saber 11°, surgió en 1968 con el propósito de apoyar a las instituciones de educación superior en sus procesos de selección y admisión de estudiantes y en la década de los ochenta llegó a evaluar a todos los estudiantes de undécimo grado. Dicha prueba es diseñada por el Instituto Colombiano para la Evaluación de la Educación, conocido por las siglas ICFES (de Instituto Colombiano para el Fomento de la Educación Superior), el cual comprueba el grado de desarrollo de las competencias de los estudiantes que están por finalizar el grado undécimo de la Educación Media. Consta de cinco pruebas:
 
 * Lectura crítica
@@ -61,8 +61,10 @@ Este examen proporciona resultados e información a distintos niveles:
  * a los establecimientos educativos les proporciona información para los procesos de autoevaluación y orientación de sus prácticas pedagógicas.
  * a las autoridades educativas les brinda información confiable para construir indicadores de calidad.
 
-## Estudio de caso
+<br/><br/>
 
+## Estudio de caso
+<br/>
 El ICFES ha disponibilizado el acceso a los resultados de la pruebas a través de su sistema [FTP](http://www.icfes.gov.co/itemlist/category/333-acceso-a-bases-de-datos). En él describe el contenido de las bases de datos, los documentos de apoyo y cómo consultarlos, los análisis que se pueden hacer e información que es fundamental tener en cuenta al momento de utilizar estos en investigaciones.
 
 Este documento tiene como objetivo lograr estimaciones los mas acertadas posible, de los resultados particulares sobre la prueba específica para **Ciencias naturales** sobre algunos dominios de interés, a partir de la aplicación de diferentes métodos de estimación por muestreo, incluyendo muestreo de áreas pequeñas 'SAE'. Definiremos a nuestra población de estudio, como el resultado de las pruebas para un periodo particular. 
@@ -96,17 +98,17 @@ muestraXest <- readRDS("./data/EC1muestraXest.rds")
 names(muestraXest)
 ```
 
-<br/>
+<br/><br/>
 
 ## 1. Definición de la muestra
-
+<br/>
 La población cuenta con los resultados para 535.254 estudiantes de los diferentes colegios del territorio colombiano, sobre la cual se ha definido un diseño muestral complejo de 3 etapas. Se han tomado los municipios como unidad primaria de muestreo, sobre los cuales se ha construído una estratificación óptima a partir del método Lavallee-Hidiroglou generalizado, usando el número de estudiantes como variable de estratificación y con un coeficiente de variación objetivo de 0.03. Sobre cada estrato se ha seleccionado una muestra de unidades aleatorio simple sin reemplazamiento (MAS).
 
 En la segunda etapa se toman los colegios como unidad secundaria de muestreo, sobre el cual se aplicó una estratificación Lavallee-Hidiroglou generalizado, con el número de colegios por municipio y el estrato anterior como variable de estratificación. Sobre cada estrato resultante se aplica MAS.
 
 Por último se define como unidad terciaria a los estudiantes, cuya selección resulta de la aplicación MAS.
 
-El desarrollo total de la muestra puede detallarse en el script [Diseño_Muestral_EC1.R](https://github.com/CamiloAguilar/SmallAreaEstimation_SABER11/blob/master/Diseno_Muestral_EC1.R) disponible en el repositorio web y que hace parte tel presente trabajo.
+El desarrollo total de la muestra puede detallarse en el script [Diseño_Muestral_EC1.R](https://github.com/CamiloAguilar/SmallAreaEstimation_SABER11/blob/master/Diseno_Muestral_EC1.R) disponible en el repositorio web.
 
 Finalmente la muestra obtenida, contiene resultados para 5.556 estudiantes, a partir de los cuales en adelante se desarrollarán las esimaciones mencionadas anteriormente. A continuación podemos observar la distribución de la variable de interés tanto en la población como en la muestra, lo que en principio podría tomarse como una prueba gráfica calidad de la muestra seleccionada:
 
@@ -118,116 +120,100 @@ hist(muestraXest$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", y
 
 <br/>
 
-## 2. Estimador global del promedio del puntaje de Ciencias Naturales 
+## 2. Estimación global del promedio 
 
-El valor Real global del promedio de la variable Ciencias naturales es (Este valor es una guia para determinar las estimaciones de este documento):
+En este punto estamos interesados en realizar una estimación global, lo más precisa posible, del promedio del puntaje obtenido para la prueba específica en <b>Ciencias naturales</b>. Para ello, se ha realizado el proceso de estimación haciendo uso de diferentes métodos.
 
 ```{r poblacion, echo=FALSE}
-kable(readRDS("./rds/real_mean.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+m<-mean(est$CIENCIAS_NATURALES_PUNT)
 ```
 
-<br>
+Dado que el presente trabajo representa un ejercicio didáctico, resulta particularmente conveniente contrastar los resultados de las estimaciones frente a los resultados reales, lo que en consecuencia servirá como medida de ajuste de los resultados para cada uno de los métodos de utilizados. El valor Real global del promedio de la variable Ciencias naturales es `r round(m, 3)`
 
-### 2.1. Estimador global del promedio Directo
+En particular, para cada estimación se tuvieron las siguientes consideraciones:
 
-El coeficiente de variación y el valor estimado por estimación directa (HT) son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
+* __Estimador Directo__: Se realiza estimación Horvitz Thompson.
+* __Estimador Sintético__: Como se desea obtener un resultado global, la estimación depende de la directa y del tamaño de la población.
+* __Estimador de Razón__: Se toma como variable auxiliar el puntaje de Sociales y ciudadanas, debido a que presenta la mayor correlación frente a la variable de interés.
+* __Estimador Post-estratificado__: Se utilizó la variable Naturaleza (Oficial-No Oficial) como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato.
+* __Estimador GREG__: Se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "diseño muestral calibrado" linealmente.
+* __Estimador HBF__: Se utilizó el dominio de Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son:
+    + Puntaje en Sociales.
+    + Nivel Estrato Energia.
+    + Naturaleza del Colegio (Oficial, No Oficial).
+    
+    Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y se realiza la estimación para los 1070 municipios que no fueron seleccionados en la muestra.
 
-```{r directo, echo=FALSE}
-kable(readRDS("./rds/Est_glo_medi_dir.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+<br/>
+
+#### __Resultados__
+
+```{r res2, echo=FALSE}
+p2.0 <- data.frame(mean=mean(est$CIENCIAS_NATURALES_PUNT), cve=NA)
+p2.1 <- readRDS("./rds/Est_glo_medi_dir.rds")
+p2.2 <- readRDS("./rds/est_mean_sint.rds")
+p2.3 <- readRDS("./rds/est_mean_razon.rds")
+p2.4 <- readRDS("./rds/Est_glo_medi_dir.rds")
+p2.5 <- readRDS("./rds/est_mean_greg.rds")
+p2.6 <- readRDS("./rds/est_mean_HBF.rds")
+
+p <- rbind(p2.0, p2.1[,c(1,3)], p2.2, p2.3, p2.4[, c(1,3)], p2.5[, c(1,3)], p2.6)
+m <- mean(est$CIENCIAS_NATURALES_PUNT)
+p$Diferencia <- round(p[,1]-m, 3)
+
+row.names(p) <- c("Poblacional", "Estimador directo", "Estimador sintético", "Estimador de razón", 
+                  "Estimador posetratificado", "Estimador GREG", "Estimador BHF")
+names(p) <- c("Puntaje medio", "cve","Diferencia")
+
+
+kable(p, "html") %>%
+  kable_styling("striped", full_width = F, position = "float_right") %>%
+  column_spec(4, bold = T) %>%
+  row_spec(c(1,4), bold = T, color = "white", background = "darkgray")
 ```
 
-<br>
+<br/><br/>
 
-### 2.2. Estimador global del promedio Sintético
+Nótese en la tabla los resultados agregados de las estimaciones relacionadas en los numerales anteriores, sobre el puntaje medio global obtenido para la prueba de Ciencias naturales. 
 
-El coeficiente de variación y el valor estimado por estimación sintético son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
+Para todos los casos podemos observar un muy buena estimación frente a la media global real, con un un coeficiente de variación inferior al 3%. 
 
-```{r sintetico, echo=FALSE}
-kable(readRDS("./rds/est_mean_sint.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+En éste ejercicio se obtiene el mejor resultado utilizando el _estimador de razón_, que coindice con el menor cve.
+
+<br/><br/>
+
+## 3. Estimación del promedio por Dominios 
+
+Puesto que realizamos estimaciones para los mismos dominios, los agregamos en la misma tabla para los estimadores directo, sintético, de razón y GREG.
+
+Nos concentramos entonces en obtener estimaciones sobre algunos segmentos particulares y que resultan de nuestro interés. Definimos la __Naturaleza del colegio__, como el dominio sobre el cuál obtendremos los resultados estimados del puntaje promedio. Realizamos el proceso evaluación haciendo uso de los mismos métodos que utilizamos para las estimaciones globales y nuevamente realizamos contraste de los resultados frente a los valores reales poblacionales.
+
+```{r res2, echo=FALSE}
+p2.0 <- data.frame(mean=mean(est$CIENCIAS_NATURALES_PUNT), cve=NA)
+p2.1 <- readRDS("./rds/Est_glo_medi_dir.rds")
+p2.2 <- readRDS("./rds/est_mean_sint.rds")
+p2.3 <- readRDS("./rds/est_mean_razon.rds")
+p2.4 <- readRDS("./rds/Est_glo_medi_dir.rds")
+p2.5 <- readRDS("./rds/est_mean_greg.rds")
+p2.6 <- readRDS("./rds/est_mean_HBF.rds")
+
+p <- rbind(p2.0, p2.1[,c(1,3)], p2.2, p2.3, p2.4[, c(1,3)], p2.5[, c(1,3)], p2.6)
+m <- mean(est$CIENCIAS_NATURALES_PUNT)
+p$Diferencia <- round(p[,1]-m, 3)
+
+row.names(p) <- c("Poblacional", "Estimador directo", "Estimador sintético", "Estimador de razón", 
+                  "Estimador posetratificado", "Estimador GREG", "Estimador BHF")
+names(p) <- c("Puntaje medio", "cve","Diferencia")
+
+
+kable(p, "html") %>%
+  kable_styling("striped", full_width = F, position = "float_right") %>%
+  column_spec(4, bold = T) %>%
+  row_spec(c(1,4), bold = T, color = "white", background = "darkgray")
 ```
 
-<br>
 
-### 2.3. Estimador global del promedio Razón
-
-La variable continua con mayor correlación es el puntaje de Sociales, como se observa en la siguiente tabla. Por tanto esta variable se utiliza como auxiliar para estimar el puntaje global promedio de Ciencias Naturales.
-
-```{r corre, echo=FALSE}
-kable(readRDS("./rds/corre.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-El coeficiente de variación y el valor estimado por estimación de razón son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r razon, echo=FALSE}
-kable(readRDS("./rds/est_mean_razon.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 2.4. Estimador global del promedio Post-estratificado
-
-Para el estimador global del promedio Post-Estratificado se utilizó la variable Naturaleza (Oficial-No Oficial( como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato. El coeficiente de variación y el valor estimado por estimación Post-Estratificada son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r estra, echo=FALSE}
-kable(readRDS("./rds/Est_glo_medi_dir.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 2.5. Estimador global del promedio GREG
-
-Para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r greg, echo=FALSE}
-plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT, xlab="Matemáticas",
-     ylab = "Ciencias Naturales", main = "Ciencias Naturales vs Matemáticas", col="orange")
-abline(readRDS("./rds/mod1_mue_greg_mean.rds"), col="red")
-```
-
-El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r greg_table, echo=FALSE}
-kable(readRDS("./rds/est_mean_greg.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-<br>
-
-### 2.6. Estimador global del promedio HBF
-
-Para la estimación HBF se utilizó el dominio de Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son:
-
-- Puntaje en Sociales
-- Nivel Estrato Energia
-- Naturaleza del Colegio (Oficial, No Oficial)
-
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
-
-```{r HBF_table, echo=FALSE}
-kable(readRDS("./rds/est_mean_HBF.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-<br>
-
-## 3. Estimador del promedio del puntaje de Ciencias Naturales por Dominio: Naturaleza 
-
-El valor Real global del promedio de la variable Ciencias naturales (Este valor es una guia para determinar las estimaciones de este documento) por dominio: Naturaleza es:
-
-```{r real_dominios, echo=FALSE}
-kable(readRDS("./rds/real_dominios.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-En todas las estimaciones se observa un mayor promedio en el dominio No Oficial.
-
-<br>
+* 
 
 ### 3.1. Estimador del promedio por dominio Directo por dominio: Naturaleza
 
@@ -539,3 +525,20 @@ kable(readRDS("./rds/est_HBF_tot.rds"), "html") %>%
 - Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. 
 
 - Todos los métodos muestran mejor cve que el estimador directo.
+
+
+## APÉNDICE
+
+* Tabla de correlación entre puntajes:
+```{r APENDIXcorre, echo=FALSE}
+kable(readRDS("./rds/corre.rds"), "html") %>%
+  kable_styling("striped", full_width = F, position = "center")
+```
+
+* Gráfica para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
+
+```{r greg, echo=FALSE}
+plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT, xlab="Matemáticas",
+     ylab = "Ciencias Naturales", main = "Ciencias Naturales vs Matemáticas", col="orange")
+abline(readRDS("./rds/mod1_mue_greg_mean.rds"), col="red")
+```
