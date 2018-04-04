@@ -337,9 +337,9 @@ Infoaux <- est %>% group_by(NATURALEZA) %>%
             Prop_Estrato4 = mean(`4`),
             Prop_Estrato5 = mean(`5`),
             Prop_Estrato6 = mean(`6`),
-            Prop_Calendario_A = mean(`Calendario A`),
-            Prop_Calendario_B = mean(`Calendario B`),
-            Prop_Calendario_F = mean(`Calendario flexible`),
+            Prop_Calendario_A = mean(`Calendario_A`),
+            Prop_Calendario_B = mean(`Calendario_B`),
+            Prop_Calendario_F = mean(`Calendario_flexible`),
             N_d = n())
 
 Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]
@@ -358,7 +358,7 @@ BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRAT
                 popnsize = Tamanos,
                 B = 200, data = muestraXest)
 
-# Estimaci�n para dominios observados
+# Estimación para dominios observados
 
 BHF$est$eblup$total <- BHF$est$eblup$eblup*BHF$est$eblup$sampsize
 BHF$est$eblup
@@ -694,9 +694,9 @@ Infoaux <- est %>% group_by(NATURALEZA) %>%
             Prop_Estrato4 = mean(`4`),
             Prop_Estrato5 = mean(`5`),
             Prop_Estrato6 = mean(`6`),
-            Prop_Calendario_A = mean(`Calendario A`),
-            Prop_Calendario_B = mean(`Calendario B`),
-            Prop_Calendario_F = mean(`Calendario flexible`),
+            Prop_Calendario_A = mean(`Calendario_A`),
+            Prop_Calendario_B = mean(`Calendario_B`),
+            Prop_Calendario_F = mean(`Calendario_flexible`),
             N_d = n())
 
 Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]
@@ -760,7 +760,7 @@ var_Ysynth_d <- var_y_barra / N_d2
 cve <- (sqrt(var_Ysynth_d) / y_barra )* 100
 cve
 
-est_sintetico_tot <- data.frame(Total=Ysynth_d, cve<-cve)
+est_sintetico_tot <- data.frame(Total=Ysynth_d, cve=cve)
 saveRDS(real_tot, "./rds/est_sintetico_tot.rds")
 
 #********************************************************************
@@ -1001,9 +1001,9 @@ Infoaux <- est %>% group_by(NATURALEZA) %>%
             Prop_Estrato4 = sum(`4`),
             Prop_Estrato5 = sum(`5`),
             Prop_Estrato6 = sum(`6`),
-            Prop_Calendario_A = sum(`Calendario A`),
-            Prop_Calendario_B = sum(`Calendario B`),
-            Prop_Calendario_F = sum(`Calendario flexible`),
+            Prop_Calendario_A = sum(`Calendario_A`),
+            Prop_Calendario_B = sum(`Calendario_B`),
+            Prop_Calendario_F = sum(`Calendario_flexible`),
             N_d = n())
 
 Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]
@@ -1029,7 +1029,7 @@ estima_total <- sum(BHF$est$eblup$eblup)
 # Estimaci�n del error cuadr�tico medio
 BHF$mse
 
-# cv
+# cve
 sqrt(sum(BHF$mse$mse)) / sum(BHF$est$eblup$eblup) * 100
 
 sum(est$CIENCIAS_NATURALES_PUNT)
@@ -1358,9 +1358,9 @@ Infoaux <- est %>% group_by(NATURALEZA) %>%
             Prop_Estrato4 = sum(`4`),
             Prop_Estrato5 = sum(`5`),
             Prop_Estrato6 = sum(`6`),
-            Prop_Calendario_A = sum(`Calendario A`),
-            Prop_Calendario_B = sum(`Calendario B`),
-            Prop_Calendario_F = sum(`Calendario flexible`),
+            Prop_Calendario_A = sum(`Calendario_A`),
+            Prop_Calendario_B = sum(`Calendario_B`),
+            Prop_Calendario_F = sum(`Calendario_flexible`),
             N_d = n())
 
 Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]

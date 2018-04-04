@@ -7,7 +7,7 @@ navbar:
       href: Home.html
 output:
   html_document:
-    theme: united
+    theme: cosmo
     highlight: haddock
     include:
       after_body: footer2.html
