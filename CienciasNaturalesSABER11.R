@@ -18,8 +18,6 @@ est <- readRDS("./data/estudiantes.rds")
 muestraXest <- readRDS("./data/EC1muestraXest.rds")
 names(est)
 
-# HACER EL DISEÑO MUESTRAL UTILICE EL MISMO DEL PROFESOR PERO NO ES ASÍ
-
 diseno_muestral <- svydesign(ids = ~ CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              strata = ~estrato_mpio + EstratoColegio,
                              fpc = ~ NI + NII + N_i, data = muestraXest,
@@ -732,12 +730,15 @@ real_tot <- sum(est$CIENCIAS_NATURALES_PUNT)
 names(real_tot) <- "CIENCIAS_NATURALES_PUNT"
 saveRDS(real_tot, "./rds/real_tot.rds")
 
-# 4.1. ESTIMADOR GLOBAL DEL TOTAL DIRECTO ####
+# 4.1. ESTIMADOR DIRECTO GLOBAL DEL TOTAL ####
 #********************************************************************
 
 Est_glo_dir_tot <- as.data.frame(svytotal(~CIENCIAS_NATURALES_PUNT, diseno_muestral))
-Est_glo_dir_tot$cve <- 100 * cv(svytotal(~CIENCIAS_NATURALES_PUNT, diseno_muestral))
-saveRDS(real_tot, "./rds/Est_glo_dir_tot.rds")
+names(Est_glo_dir_tot) <- c("total", "se")
+Est_glo_dir_tot$cve <- 100 * cv(svytotal(~CIENCIAS_NATURALES_PUNT, diseno_muestral))[1,1]
+Est_glo_dir_tot
+
+saveRDS(Est_glo_dir_tot, "./rds/Est_glo_dir_tot.rds")
 
 
 #********************************************************************
@@ -761,7 +762,7 @@ cve <- (sqrt(var_Ysynth_d) / y_barra )* 100
 cve
 
 est_sintetico_tot <- data.frame(Total=Ysynth_d, cve=cve)
-saveRDS(real_tot, "./rds/est_sintetico_tot.rds")
+saveRDS(est_sintetico_tot, "./rds/est_sintetico_tot.rds")
 
 #********************************************************************
 # 4.3. ESTIMADOR GLOBAL DEL TOTAL RAZÓN ####
@@ -798,6 +799,7 @@ cve <- sqrt(Var_Y_ratio) / Y_ratio * 100
 
 est_razon_tot <- data.frame(Total=Y_ratio, cve=cve)
 rownames(est_razon_tot) <- "CIENCIAS_NATURALES_PUNT / SOCIALES_CIUDADANAS_PUNT"
+est_razon_tot
 
 saveRDS(est_razon_tot, "./rds/est_razon_tot.rds")
 
@@ -1031,6 +1033,7 @@ G <- length(unique(est$NATURALEZA))
 Ybarpron <- t(y_bar * t(matrix(1, nrow = G, ncol = 1 )))
 N_d <- as.data.frame(sort(table(est$NATURALEZA)))[,2]
 Ysynth_d <- y_bar * N_d
+Ysynth_d
 
 # Real
 aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, data=est, FUN=sum)
@@ -1044,53 +1047,59 @@ var_Ysynth_d <- var_y_barra / N_d2
 cve <- (sqrt(var_Ysynth_d))*100000
 cve
 
-est_dom_tot_dintetico <- data.frame(mean=Ysynth_d, cve=cve)
+est_dom_tot_dintetico <- data.frame(total=Ysynth_d, cve=cve)
 rownames(est_dom_tot_dintetico) <- c("No Oficial", "Oficial")
+est_dom_tot_dintetico
 
 saveRDS(est_dom_tot_dintetico, "./rds/est_dom_tot_dintetico.rds")
 
 #********************************************************************
-# 5.3. ESTIMADOR DOMINIOS DEL TOTAL RAZÓN ####
+# 5.3. ESTIMADOR DE RAZÓN DEL TOTAL POR DOMINIOS ####
 #********************************************************************
 
-# La variable auxiliar es PUNTAJE MATEMÄTICAS porque es la de mayor correlación
+# La variable auxiliar es PUNTAJE MATEMÁTICAS porque es la de mayor correlación
 # con CIENCIAS NATURALES
 # dominio: Naturaleza
 
-estimaGlobal_ciencias <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_muestral, FUN=svymean))
+estimaGlobal_ciencias <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_muestral, FUN=svytotal))
 hatY <- estimaGlobal_ciencias[,2]
 names(hatY) <- estimaGlobal_ciencias[,1]
 
-estimaGlobal_sociales <- as.data.frame(svyby(~SOCIALES_CIUDADANAS_PUNT,  ~NATURALEZA, diseno_muestral, FUN=svymean))
+estimaGlobal_sociales <- as.data.frame(svyby(~SOCIALES_CIUDADANAS_PUNT,  ~NATURALEZA, diseno_muestral, FUN=svytotal))
 hatX <- estimaGlobal_sociales[,2]
 names(hatX) <- estimaGlobal_sociales[,1]
 
-X_U <- aggregate(SOCIALES_CIUDADANAS_PUNT ~ NATURALEZA, FUN = mean, data = est)
+X_U <- aggregate(SOCIALES_CIUDADANAS_PUNT ~ NATURALEZA, FUN = sum, data = est)
 X_U_ <- sort(X_U$SOCIALES_CIUDADANAS_PUNT, decreasing = T)
 names(X_U_) <- estimaGlobal_sociales[,1]
 
 # Estimador de razón
 Y_ratio <- hatY * (X_U_ / hatX)
+Y_ratio
 
 # Real
-aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, FUN = mean, data = est)
+aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, FUN = sum, data = est)
 
 # cve
 Var_Y_ratio <- X_U_^2 * SE(svyby(~CIENCIAS_NATURALES_PUNT, by=~NATURALEZA,
                                  denominator = ~SOCIALES_CIUDADANAS_PUNT, 
                                  diseno_muestral, FUN=svyratio))^2
 
-sqrt(Var_Y_ratio) / Y_ratio * 100
+cve=sqrt(Var_Y_ratio) / Y_ratio * 100
+
+est_razon_tot_dom <- data.frame(Total=Y_ratio, cve=cve)
+saveRDS(est_razon_tot_dom, "./rds/est_razon_tot_dom.rds")
+
+
 
 #********************************************************************
-# 5.4. ESTIMADOR DOMINIOS DEL TOTAL POSESTRATIFICADO ####
+# 5.4. ESTIMADOR POSESTRATIFICADO DEL TOTAL POR DOMINIOS ####
 #********************************************************************
 
 muestraXest$natu_estrato <- paste(muestraXest$NATURALEZA, muestraXest$FINS_ESTRATOVIVIENDAENERGIA
                                      , sep="_")
 
-est$natu_estrato <- paste(est$NATURALEZA, est$FINS_ESTRATOVIVIENDAENERGIA
-                          , sep="_")
+est$natu_estrato <- paste(est$NATURALEZA, est$FINS_ESTRATOVIVIENDAENERGIA, sep="_")
 
 table(muestraXest$natu_estrato)
 
@@ -1100,7 +1109,7 @@ diseno_muestral <- svydesign(ids = ~CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
                              nest = T)
 
 naturaleza_estrato_est <- svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, diseno_muestral, FUN=svytotal)
-naturaleza_estrato_cv <- 100 * cv(svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, diseno_muestral, FUN=svymean))
+naturaleza_estrato_cv <- 100 * cv(svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, diseno_muestral, FUN=svytotal))
 
 real_natu_est <- aggregate(CIENCIAS_NATURALES_PUNT~natu_estrato, data=est, FUN=sum)
 
@@ -1108,17 +1117,17 @@ naturaleza_estrato_est_tot <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~nat
                                               diseno_muestral, FUN=svytotal))[,c(2,3)]
 
 naturaleza_estrato_est_tot$cve <- 100 * cv(svyby(~CIENCIAS_NATURALES_PUNT, ~natu_estrato, diseno_muestral, FUN=svytotal))
-
+naturaleza_estrato_est_tot
 saveRDS(naturaleza_estrato_est_tot, "./rds/naturaleza_estrato_est_tot.rds")
 
 real_natu_est_tot <- aggregate(CIENCIAS_NATURALES_PUNT~natu_estrato, data=est, FUN=sum)
-
 saveRDS(real_natu_est_tot, "./rds/real_natu_est_tot.rds")
 
 
 #********************************************************************
-# 5.5. ESTIMADOR DOMINIOS DEL TOTAL GREG ####
+# 5.5. ESTIMADOR GREG DEL TOTAL POR DOMINIOS ####
 #********************************************************************
+# Dominio NATURALEZA
 
 cor(est[,c(18:22)])
 
@@ -1130,35 +1139,96 @@ mod1_mue <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data=muestraXest,
                weights = fexp)
 
 summary(mod1_mue)
-plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT)
-abline(mod1_mue)
+e <- mod1_mue$residuals
 
-Xu <- as.numeric(c(nrow(est), sum(est$MATEMATICAS_PUNT)))
+# Crear g
+modeloU <- lm(CIENCIAS_NATURALES_PUNT ~ MATEMATICAS_PUNT, data = est)
+X_U <-  model.matrix(modeloU)
+X_s <- model.matrix(mod1_mue)
 
-diseno_calibrado <- calibrate(diseno_muestral, ~ MATEMATICAS_PUNT, calfun = "linear" , 
-                              population = Xu)
+diseno <- diseno_muestral
+fexp_k <- weights(diseno) # 1/pi_k
+# summary(pi_k)
+W <- diag(fexp_k)
+g <- rep(NA, nrow(muestraXest))
 
-muestraXest$pesocalib <- weights(diseno_calibrado)
-g_k <- muestraXest$pesocalib / muestraXest$fexp
-# Mediana y promedio cercanos a 1
-summary(g_k)
+#Dominio
+unique(est$NATURALEZA)
 
-svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_calibrado, FUN=svytotal)
-100*cv(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_calibrado, FUN=svytotal))
+#***********************************
+# Dominio NATURALEZA = "No oficial"
+#***********************************
+SumUd_X <- as.matrix(colSums(X_U[est$NATURALEZA == "No oficial", ]))
+SumSd_X <- as.matrix(colSums(X_s[muestraXest$NATURALEZA == "No oficial", ]*
+                               fexp_k[muestraXest$NATURALEZA == "No oficial"]))
 
-est_dom_greg_tot <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_calibrado, FUN=svymean))[,c(2,3)]
-est_dom_greg_tot$cve <- 100*cv(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_calibrado, FUN=svymean))
+# Este zeta es el delta de las ecuaciones del cuaderno
+z_dk <- as.numeric(muestraXest$NATURALEZA == "No oficial")
+#i = 2
+for(i in 1:nrow(muestraXest)){
+  g[i] <-   z_dk[i] + t(SumUd_X - SumSd_X) %*%
+    solve(t(X_s) %*% W %*% X_s) %*% as.matrix(X_s[i,])
+}
+summary(g)
 
-saveRDS(est_dom_greg_tot, "./rds/est_dom_greg_tot.rds")
+yGreg_NOoficial <- sum(muestraXest$CIENCIAS_NATURALES_PUNT *  g  * fexp_k)
+aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, FUN = sum, data = est)
+
+muestraXest$U <- g * mod1_mue$residuals
+diseno <- svydesign(ids = ~ CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
+                             strata = ~estrato_mpio + EstratoColegio,
+                             fpc = ~ NI + NII + N_i, data = muestraXest,
+                             nest = T)
+
+svytotal(~U, diseno)
+cv__NOoficial <- 100 * svytotal(~U, diseno) / yGreg_NOoficial
+
+greg_NOoficial_total <- c(yGreg_NOoficial, cv__NOoficial)
+names(greg_NOoficial_total) <- c("Total_No_Oficial", "cv")
+
+saveRDS(greg_NOoficial_total, file = "./rds/greg_NOoficial_total.rds")
+
+#***********************************
+# Dominio NATURALEZA = "Oficial"
+#***********************************
+SumUd_X <- as.matrix(colSums(X_U[est$NATURALEZA == "Oficial", ]))
+SumSd_X <- as.matrix(colSums(X_s[muestraXest$NATURALEZA == "Oficial", ]*
+                               fexp_k[muestraXest$NATURALEZA == "Oficial"]))
+
+# Este zeta es el delta de las ecuciones del cuaderno
+z_dk <- as.numeric(muestraXest$NATURALEZA == "Oficial")
+#i = 2
+library(svMisc)
+for(i in 1:nrow(muestraXest)){
+  progress(i)
+  g[i] <-   z_dk[i] + t(SumUd_X - SumSd_X) %*%
+    solve(t(X_s) %*% W %*% X_s) %*% as.matrix(X_s[i,])
+}
+summary(g)
+
+yGreg_Oficial <- sum(muestraXest$CIENCIAS_NATURALES_PUNT *  g  * fexp_k)
+aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, FUN = sum, data = est)
+
+muestraXest$U <- g * mod1_mue$residuals
+diseno <- svydesign(ids = ~ CODIGOMUNICIPIO + CODIGO_ICFES + ID_estud,
+                    strata = ~estrato_mpio + EstratoColegio,
+                    fpc = ~ NI + NII + N_i, data = muestraXest,
+                    nest = T)
+
+svytotal(~U, diseno)
+cv__Oficial <- 100 * svytotal(~U, diseno) / yGreg_Oficial
+
+greg_oficial_total <- c(yGreg_Oficial, cv__Oficial)
+names(greg_oficial_total) <- c("Total_Oficial", "cv")
+
+saveRDS(greg_oficial_total, file = "./rds/greg_oficial_total.rds")
 
 
-aggregate(CIENCIAS_NATURALES_PUNT~NATURALEZA, data=est, FUN=sum)
+
+
 
 #********************************************************************
-# 5.6. ESTIMADOR DOMINIOS DE LA MEDIA HBF ####
-#********************************************************************
-
-# 5.6.1. ESTIMADOR GLOBAL DE LA MEDIA HBF DOMINIO: MUNICIPIO ####
+# 5.6. ESTIMADOR HBF DEL TOTAL POR DOMINIOS ####
 #********************************************************************
 
 # Dominio Depto(Cod mpio)
@@ -1299,56 +1369,5 @@ rownames(est_HBF_tot) <- "CIENCIAS_NATURALES_PUNT"
 saveRDS(est_HBF_tot, "./rds/est_HBF_tot.rds")
 
 
-#********************************************************************
-# 5.6.2. ESTIMADOR GLOBAL DE LA MEDIA HBF DOMINIO: NATURALEZA ####
-#********************************************************************
-
-# Dominio Naturaleza
-# y_est: Puntaje Ciencias Naturales
-# x1: puntaje sociales
-# x2: Estrato eneriga
-# x3: Calendario
-
-Infoaux <- est %>% group_by(NATURALEZA) %>% 
-  summarise(Prom_SOCIALES_CIUDADANAS_PUNT = sum(SOCIALES_CIUDADANAS_PUNT),
-            Prop_Estrato1 = sum(`1`),
-            Prop_Estrato2 = sum(`2`),
-            Prop_Estrato3 = sum(`3`),
-            Prop_Estrato4 = sum(`4`),
-            Prop_Estrato5 = sum(`5`),
-            Prop_Estrato6 = sum(`6`),
-            Prop_Calendario_A = sum(`Calendario_A`),
-            Prop_Calendario_B = sum(`Calendario_B`),
-            Prop_Calendario_F = sum(`Calendario_flexible`),
-            N_d = n())
-
-Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]
-names(Infoaux)
-Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
-                     "Prop_Estrato2", "Prop_Estrato3", "Prop_Estrato4", "Prop_Estrato5", "Prop_Estrato6", 
-                     "Prop_Calendario_B", "Prop_Calendario_F")]
-
-Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
-Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
-
-BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
-                dom = NATURALEZA, 
-                meanxpop = Medias,
-                popnsize = Tamanos,
-                B = 200, data = muestraXest)
-
-# Estimaci�n para dominios observados
-BHF$est$eblup
-
-# Estimaci�n del error cuadr�tico medio
-BHF$mse
-
-# cv
-sqrt(BHF$mse$mse) / BHF$est$eblup$eblup * 100
-
-aggregate(CIENCIAS_NATURALES_PUNT~NATURALEZA, data=est, FUN=sum)
-
-#********************************************************************
-
+#
 

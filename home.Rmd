@@ -316,208 +316,179 @@ plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve",
 Hasta el  momento hemos logrado hacer estimaciones bastante buenas de la media del puntaje logrado por los estudiantes para las pruebas de ciencias naturales. Ahora nuestro objetivo será estimar con la mayor precisión posible el puntaje total logrado, o lo que es lo mismo, la suma de los puntajes obtenidos por los estudiantes.
 
 Para ello hemos utilizado los mismos tipos de estimadores, obteniendo los siguientes resultados
+
 </br>
 
+#### __Resultados__
 
-El valor Real global de la variable Ciencias naturales es (Este valor es una guia para determinar las estimaciones de este documento):
+```{r res4, echo=FALSE}
+p4.0 <- data.frame(total=sum(est$CIENCIAS_NATURALES_PUNT), cve=NA)
+row.names(p4.0) <- "Poblacional"
 
-```{r poblacion_tot, echo=FALSE}
-kable(readRDS("./rds/real_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+p4.1 <- readRDS("./rds/Est_glo_dir_tot.rds")
+p4.1$se <- NULL; row.names(p4.1) <- "Estimador directo"
+names(p4.1) <- c("total", "cve")
+
+p4.2 <- readRDS("./rds/est_sintetico_tot.rds")
+row.names(p4.2) <- c("Estimador sintético") 
+names(p4.2) <- c("total", "cve")
+
+p4.3 <- readRDS("./rds/est_razon_tot.rds")
+row.names(p4.3) <- c("Estimador de razón")
+names(p4.3) <- c("total", "cve")
+
+p4.4 <- readRDS("./rds/est_estra_tot.rds")
+p4.4$se <- NULL; row.names(p4.4) <- "Estimador postetratificado"
+names(p4.4) <- c("total", "cve")
+
+p4.5 <- readRDS("./rds/est_greg_tot.rds")
+p4.5$se <- NULL; row.names(p4.5) <- "Estimador GREG"
+names(p4.5) <- c("total", "cve")
+
+p4.6 <- readRDS("./rds/est_tot_HBF.rds")
+p4.6$real_total<-NULL; row.names(p4.6) <- "Estimador BHF"
+names(p4.6) <- c("total", "cve")
+
+p4_total <- rbind(p4.0, p4.1, p4.2, p4.3, p4.4, p4.5, p4.6)
+p4_total$Diferencia <- p4_total$total - sum(est$CIENCIAS_NATURALES_PUNT)
+
+kable(p4_total, "html") %>%
+  kable_styling("striped", full_width = F, position = "float_right") %>%
+  column_spec(4, bold = T) %>%
+  row_spec(c(1,4), bold = T, color = "white", background = "darkgray")
+
+```
+<br/><br/>
+
+<div class=text-justify>
+Nótese en la tabla los resultados agregados de las estimaciones relacionadas en los numerales anteriores, sobre el puntaje total global obtenido para la prueba de Ciencias naturales. 
+
+Para todos los casos podemos observar una relativa buena estimación frente a la media global real, con un un coeficiente de variación inferior al 6%. 
+
+En éste ejercicio se obtiene el mejor resultado utilizando el _estimador de razón_, que coindice con el menor cve, seguido de cerca por el estimador BHF.
+</div>
+
+<br/><br/>
+
+## 5. Estimación del total por Dominios 
+
+<div class=text-justify>
+Nuevamente definimos la __Naturaleza del colegio__, como el dominio sobre el cuál obtendremos los resultados estimados del puntaje total. Realizamos el proceso evaluación haciendo uso de los mismos métodos que utilizamos para las estimaciones globales y nuevamente realizamos contraste de los resultados frente a los valores reales poblacionales.
+
+Puesto que realizamos estimaciones para sobre el mismo dominio, resulta conveniente agregar en la misma tabla los resultados para las estimaciones directa, sintética, de razón y GREG. Las consideraciones resultan ser equivalentes a las trabajadas en los numerales anterioriores.
+</div>
+
+<br/>
+
+#### __Resultados__
+
+```{r res5a, echo=FALSE}
+# Valores poblacionales
+p5.0 <- est %>% group_by(NATURALEZA) %>%
+        summarise(total=sum(CIENCIAS_NATURALES_PUNT, na.rm=T)) %>%
+        mutate(cve=NA, Resultado="Poblacional") %>%
+        select(Resultado, NATURALEZA, total, cve)
+
+# Estimaciones
+p5.1 <- readRDS("./rds/est_dir_toto.rds")
+p5.1 <- p5.1 %>% mutate(NATURALEZA = row.names(p5.1), Resultado="Estimador directo") %>%
+        select(Resultado, NATURALEZA, total=CIENCIAS_NATURALES_PUNT, cve)
+
+p5.2 <- readRDS("./rds/est_dom_tot_dintetico.rds")
+p5.2 <- p5.2 %>% mutate(NATURALEZA = row.names(p5.2), Resultado="Estimador Sintético") %>%
+        select(Resultado, NATURALEZA, total=total, cve)
+p5.2$NATURALEZA <- c("No oficial", "Oficial")
+
+p5.3 <- readRDS("./rds/est_razon_tot_dom.rds")
+p5.3 <- p5.3 %>% mutate(NATURALEZA = row.names(p5.3), Resultado="Estimador de razón") %>%
+        select(Resultado, NATURALEZA, total=Total, cve)
+
+p5.5a <- readRDS("./rds/greg_oficial_total.rds"); names(p5.5a)[1] <-"total"
+p5.5b <- readRDS("./rds/greg_NOoficial_total.rds"); names(p5.5b)[1] <-"total"
+p5.5 <- as.data.frame(rbind(p5.5b, p5.5a)); row.names(p5.5) <- c("No oficial", "Oficial")
+p5.5 <- p5.5 %>% mutate(NATURALEZA = row.names(p5.5), Resultado="Estimador GREG", cv=abs(cv)) %>%
+        select(Resultado, NATURALEZA, total=total, cve=cv)
+
+NOf <- as.numeric(p5.0[p5.0$NATURALEZA=="No oficial",3])
+Of <- as.numeric(p5.0[p5.0$NATURALEZA=="Oficial",3])
+
+p5 <- rbind(p5.0, p5.1, p5.2, p5.3, p5.5)
+p5 <- p5 %>% select(NATURALEZA, Resultado, total, cve) %>% arrange(NATURALEZA) %>%
+      mutate(Diferencia = round(ifelse(NATURALEZA=="Oficial", total - Of, total - NOf), 3))
+
+
+kable(p5, "html", align = "c") %>%
+  kable_styling("striped", full_width = F, position = "float_left") %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = 1) %>%
+  row_spec(c(1,6), bold = T, color = "white", background = "darkgray")
+  #column_spec(2, background = "darkgray")
+
 ```
 
-<br>
+<br/><br/>
 
-### 4.1. Estimador global Directo
+<div class=text-justify>
+En estos resultados es notable que el estimador sintético presenta falencias considerables respecto a los demás métodos, lo que puede detallarse en el coeficiente de variación y la diferencia de la estimación frente al resultado real poblacional. 
 
-El coeficiente de variación y el valor estimado por estimación directa (HT) son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
+Los demás estimadores presentan un ajuste bastante bueno, en particular el estimador de razón, que presenta un coeficiente de variación de apenas 0.525 y 0.957 para los colegios oficiales y los no oficiales, respectivamente. Resulta importante resaltar que el resultado pone en evidencia que el resultado medio para las pruebas específicas en ciencias naturales es mas favorable para los colegios privados. 
+</div>
 
-```{r directo_tot, echo=FALSE}
-kable(readRDS("./rds/Est_glo_dir_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+<br/><br/>
+
+* __Estimador Post-estratificado por dominios__
+
+<div class=text-justify>
+De la misma forma que en el numeral anterior, se utilizó la variable Naturaleza (Oficial-No Oficial) como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato.
+</div>
+
+```{r estra_dom5, echo=FALSE}
+p3.4.0 <- est %>% group_by(NATURALEZA, FINS_ESTRATOVIVIENDAENERGIA) %>%
+          summarise(Media_Pop=mean(CIENCIAS_NATURALES_PUNT)) %>%
+          select(NATURALEZA, Estrato=FINS_ESTRATOVIVIENDAENERGIA, Media_Pop) %>%
+          arrange(desc(NATURALEZA))
+
+p3.4 <- readRDS("./rds/naturaleza_estrato_est_dom.rds")
+
+p3.4.0$Media_est <- p3.4$CIENCIAS_NATURALES_PUNT
+p3.4.0$cve <- p3.4$cve
+p3.4.0$Diferencia <- p3.4.0$Media_Pop - p3.4.0$Media_est
+
+kable(p3.4.0, "html") %>%
+  kable_styling("striped", full_width = F, position = "center") %>%
+  column_spec(1:2, bold = T)
 ```
 
-<br>
+<br/><br/>
 
-### 4.2. Estimador global Sintético
+* __Estimador HBF del promedio por dominios__
 
-El coeficiente de variación y el valor estimado por estimación sintético son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
+<div class=text-justify>
+Para la estimación HBF se utilizó el dominio definido por los Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son la mismas definidas en el estimador HBF del numeral anterior.
 
-```{r sintetico_tot, echo=FALSE}
-kable(readRDS("./rds/est_sintetico_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
+La siguiente tabla, muestra los resultados para los 1070 municipios del territorio colombiano, entre los cuales se encuentran los 28 que fueron incluídos en la muestra.
+</div>
 
-<br>
+```{r HBF_table_dom5, echo=FALSE}
+p3.6 <- readRDS("./rds/Resultados_BHF.rds")
 
-### 4.3. Estimador global Razón
-
-La variable continua con mayor correlación es el puntaje de Sociales, como se observa en la siguiente tabla. Por tanto esta variable se utiliza como auxiliar para estimar el puntaje global promedio de Ciencias Naturales.
-
-```{r corretot, echo=FALSE}
-kable(readRDS("./rds/corre.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-El coeficiente de variación y el valor estimado por estimación de razón son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r razontot, echo=FALSE}
-kable(readRDS("./rds/est_razon_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 4.4. Estimador global Post-estratificado
-
-Para el estimador global del promedio Post-Estratificado se utilizó la variable Naturaleza (Oficial-No Oficial( como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato. El coeficiente de variación y el valor estimado por estimación Post-Estratificada son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r estratot, echo=FALSE}
-kable(readRDS("./rds/est_estra_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 4.5. Estimador global GREG
-
-Para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. 
-
-El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r greg_tabletot, echo=FALSE}
-kable(readRDS("./rds/est_greg_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-<br>
-
-### 4.6. Estimador global HBF
-
-Para la estimación HBF se utilizó el dominio de Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son:
-
-- Puntaje en Sociales
-- Nivel Estrato Energia
-- Naturaleza del Colegio (Oficial, No Oficial)
-
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
-
-```{r HBF_tabletot, echo=FALSE}
-kable(readRDS("./rds/est_tot_HBF.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-<br>
-
-## 5. Estimador del puntaje de Ciencias Naturales por Dominio: Naturaleza 
-
-El valor Real global del promedio de la variable Ciencias naturales (Este valor es una guia para determinar las estimaciones de este documento) por dominio: Naturaleza es:
-
-```{r real_dominiostot, echo=FALSE}
-kable(readRDS("./rds/real_dominios_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-En todas las estimaciones se observa un mayor promedio en el dominio No Oficial.
-
-<br>
-
-### 5.1. Estimador por dominio Directo por dominio: Naturaleza
-
-El coeficiente de variación y el valor estimado por estimación directa (HT) son adecuados para ambos dominios, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r directo_domtot, echo=FALSE}
-kable(readRDS("./rds/est_dir_toto.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 5.2. Estimador Sintético por domoinio: Naturaleza
-
-El coeficiente de variación y el valor estimado por estimación sintético son adecuados para el dominio Naturaleza: "Oficial" pero para "No Oficial" no es muy confiable.
-
-```{r sintetico_domtot, echo=FALSE}
-kable(readRDS("./rds/est_dom_tot_dintetico.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 5.3. Estimador Razón por dominio Aux: Sociales
-
-La variable continua con mayor correlación es el puntaje de Sociales, como se observa en la siguiente tabla. Por tanto esta variable se utiliza como auxiliar para estimar el puntaje global promedio de Ciencias Naturales por dominios: Naturaleza.
-
-```{r corre_domtot, echo=FALSE}
-kable(readRDS("./rds/corre.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-El coeficiente de variación y el valor estimado por estimación de razón son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r razon_domtot, echo=FALSE}
-kable(readRDS("./rds/est_dom_tot_razon.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 5.4. Estimador Post-estratificado por dominio - Naturaleza_Estrato
-
-Para el estimador global del promedio Post-Estratificado se utilizó la variable Naturaleza (Oficial-No Oficial( como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato. El coeficiente de variación y el valor estimado por estimación Post-Estratificada son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r estra_domtot, echo=FALSE}
-kable(readRDS("./rds/naturaleza_estrato_est_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-Los valores reales se observan en la siguiente tabla, se observa pocas diferencias lo cuál muestra un buen comportamiento del estimador de Post-Estratificado
-
-```{r estra_dom_realtot, echo=FALSE}
-kable(readRDS("./rds/real_natu_est_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-<br>
-
-### 5.5. Estimador GREG por dominio Aux: Matematicas
-
-Para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. 
-
-El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r greg_table_domtot, echo=FALSE}
-kable(readRDS("./rds/est_dom_greg_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
+kable(p3.6, "html") %>%
+  kable_styling("striped", full_width = F, position = "center")  %>%
+  scroll_box(width = "850px", height = "300px")
 ```
 <br>
 
-### 5.6. Estimador HBF por dominio: Municipio
+<div class=text-justify>
+La gráfica a continuación facilita la visualización de los coeficientes de variación para cada uno de los municipios, notando que en general, las estimaciones resultan ser bastante acertadas:
+</div>
 
-Para la estimación HBF se utilizó el dominio de Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son:
-
-- Puntaje en Sociales
-- Nivel Estrato Energia
-- Naturaleza del Colegio (Oficial, No Oficial)
-
-Se utiliza un número de bootstrap replicados de 200. Se obtiene una estimación para los 28 municipios observados y como se peude ver en el código del siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11) se realiza la estimación para los 1070 municipios no observados. En la siguiente tabla se muestra la estimación de todos los municipios (los primeros 6 registros) y la gráfica de todos los coeficientes de variación, mostrando unos cve confiables y todos menores a 5%.
-
-```{r HBF_table_domtot, echo=FALSE}
-kable(readRDS("./rds/head_resultados_HBF_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-plot(readRDS("./rds/resultados_HBF_tot.rds")$cve, xlab = "Municipios", ylab = "cve", main = "CVE por Municipio", col = "orange")
+```{r HBF_table_dom5.1, echo=FALSE}
+plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve", 
+     main = "CVE por Municipio", col = "orange")
 ```
 <br>
 
-A contoinuación se muestra la estimacióm del total y el coeficiente de variación por HBF.
 
-```{r HBF_table_dom_tot, echo=FALSE}
-kable(readRDS("./rds/est_HBF_tot.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-<br>
 
 ## 6. Conclusiones
 
