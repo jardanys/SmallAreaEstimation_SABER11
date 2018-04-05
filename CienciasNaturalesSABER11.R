@@ -741,7 +741,7 @@ saveRDS(real_tot, "./rds/Est_glo_dir_tot.rds")
 
 
 #********************************************************************
-# 4.2. ESTIMADOR GLOBAL DEL TOTAL SINTÉTICO ####
+# 4.2. ESTIMADORSINTÉTICO SINTÉTICO DEL TOTAL GLOBAL  ####
 #********************************************************************
 
 # Estimación
@@ -818,7 +818,7 @@ saveRDS(est_estra_tot, "./rds/est_estra_tot.rds")
 
 cor(est[,c(18:22)])
 
-# Calibrar usando MATEMATICAS_PUNT
+# Se calibra usando MATEMATICAS_PUNT
 
 muestraXest$fexp <- weights(diseno_muestral)
 
@@ -845,15 +845,23 @@ names(est_greg_tot) <- c("Total", "se", "cv")
 saveRDS(est_greg_tot, "./rds/est_greg_tot.rds")
 sum(est$CIENCIAS_NATURALES_PUNT)
 
+#***********************************
+# Principio de representatividad  
+#***********************************
+real_4.5 <- est %>% summarise(Ciencias=sum(CIENCIAS_NATURALES_PUNT), Matemáticas=sum(MATEMATICAS_PUNT))
+repre_4.5 <- as.data.frame(svytotal(~CIENCIAS_NATURALES_PUNT + MATEMATICAS_PUNT, diseno_calibrado))
+
+repre_4.5$Total_real <- c(real_4.5$Ciencias, real_4.5$Matemáticas)
+repre_4.5 <- repre_4.5 %>% select(Estimación=total, Total_real)
+saveRDS(repre_4.5, "./rds/repre_4.5.rds")
 
 
 #********************************************************************
-
-# 4.6. ESTIMADOR GLOBAL DE LA MEDIA HBF  ####
+# 4.6. ESTIMADOR GLOBAL DEL TOTAL - HBF  ####
 #********************************************************************
 
 #********************************************************************
-# 4.6.1. ESTIMADOR GLOBAL DE LA MEDIA HBF DOMINIO: MUNICIPIO ####
+# 4.6.1. ESTIMADOR GLOBAL DEL TOTAL (HBF) -  DOMINIO: MUNICIPIO ####
 #********************************************************************
 
 # Dominio Depto(Cod mpio)
@@ -863,16 +871,16 @@ sum(est$CIENCIAS_NATURALES_PUNT)
 # x3: Naturaleza
 
 Infoaux <- est %>% group_by(CODIGOMUNICIPIO) %>% 
-  summarise(Prom_SOCIALES_CIUDADANAS_PUNT = sum(SOCIALES_CIUDADANAS_PUNT),
-            Prop_Estrato1 = sum(`1`),
-            Prop_Estrato2 = sum(`2`),
-            Prop_Estrato3 = sum(`3`),
-            Prop_Estrato4 = sum(`4`),
-            Prop_Estrato5 = sum(`5`),
-            Prop_Estrato6 = sum(`6`),
-            Prop_Naturaleza_No_Oficial = sum(`No oficial`),
-            Prop_Naturaleza_Oficial = sum(`Oficial`),
-            N_d = n() )
+  summarise(Prom_SOCIALES_CIUDADANAS_PUNT = mean(SOCIALES_CIUDADANAS_PUNT),
+            Prop_Estrato1 = mean(`1`),
+            Prop_Estrato2 = mean(`2`),
+            Prop_Estrato3 = mean(`3`),
+            Prop_Estrato4 = mean(`4`),
+            Prop_Estrato5 = mean(`5`),
+            Prop_Estrato6 = mean(`6`),
+            Prop_Naturaleza_No_Oficial = mean(`No oficial`),
+            Prop_Naturaleza_Oficial = mean(`Oficial`),
+            N_d = n())
 
 Tamanos <- Infoaux[,c("CODIGOMUNICIPIO", "N_d")]
 names(Infoaux)
@@ -891,10 +899,10 @@ BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRAT
                 B = 200, data = muestraXest)
 
 
-# Estimaci�n para dominios observados
+# Estimación para dominios observados
 BHF$est$eblup
 
-# Estimaci�n del error cuadr�tico medio
+# Estimación del error cuadrático medio
 BHF$mse
 
 # cv
@@ -932,8 +940,8 @@ Prom_dominios_observados <- BHF$est$eblup
 Prom_dominios <- merge(Prom_dominios, Prom_dominios_observados, by = "domain", all.x = T)
 names(Prom_dominios)[1] <- "MUNICIPIO"
 head(Prom_dominios)
-# Estimaci�n MSE para dominios no observados 
 
+# Estimación MSE para dominios no observados 
 library(nlme)
 modelo_mixto <- lme(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + NATURALEZA, 
                     random = ~1 | as.factor(CODIGOMUNICIPIO), data = muestraXest)
@@ -965,10 +973,10 @@ head(df_MSE_Dominiosobservados)
 df_MSE_Dominios <- bind_rows(df_MSE_DominiosNoobservados, df_MSE_Dominiosobservados)
 df_MSE_Dominios <- df_MSE_Dominios[order(df_MSE_Dominios$MUNICIPIO),]
 
-# Tienden a dar m�s MSE los dominios no obsevados
+# Tienden a dar más MSE los dominios no obsevados
 boxplot(MSE ~ ClaseDominio, data = df_MSE_Dominios)
 
-# Resultados finales
+# Resultados finales (de la media)
 Resultados <- merge(Prom_dominios, df_MSE_Dominios, by = "MUNICIPIO")
 Resultados$Yhat_BHF <- ifelse(Resultados$ClaseDominio == "No observado", Resultados$Ybar_efectosfijos,
                               Resultados$eblup)
@@ -976,92 +984,43 @@ Resultados$cve <- 100 * sqrt(Resultados$MSE) / Resultados$Yhat_BHF
 
 head(Resultados)
 
-est_tot_HBF <- data.frame(Total=sum(Resultados$Yhat_BHF), cve=mean(Resultados$cve))
+# Totales
+est_tot_HBF <- data.frame(CODIGOMUNICIPIO=Resultados$MUNICIPIO, media=Resultados$Yhat_BHF, cve=Resultados$cve)
+Tam_Mun <- est %>% group_by(CODIGOMUNICIPIO) %>%
+           summarise(Nd=n())
+
+est_tot_HBF <- merge(est_tot_HBF, Tam_Mun, by="CODIGOMUNICIPIO") %>%
+               mutate(Total=media*Nd)
+
+est_tot_HBF <- data.frame(Est_total=sum(est_tot_HBF$Total), cve=mean(est_tot_HBF$cve), 
+                          real_total=sum(est$CIENCIAS_NATURALES_PUNT))
+
 rownames(est_tot_HBF) <- "CIENCIAS_NATURALES_PUNT"
 saveRDS(est_tot_HBF, "./rds/est_tot_HBF.rds")
 
-sum(aggregate(CIENCIAS_NATURALES_PUNT~CODIGOMUNICIPIO, data=est, FUN=sum)$CIENCIAS_NATURALES_PUNT)
-sum(est$CIENCIAS_NATURALES_PUNT)
 
 #********************************************************************
-# 4.6.2. ESTIMADOR GLOBAL DE LA MEDIA HBF DOMINIO: NATURALEZA ####
-#********************************************************************
-
-# Dominio Naturaleza
-# y_est: Puntaje Ciencias Naturales
-# x1: puntaje sociales
-# x2: Estrato eneriga
-# x3: Calendario
-
-Infoaux <- est %>% group_by(NATURALEZA) %>% 
-  summarise(Prom_SOCIALES_CIUDADANAS_PUNT = sum(SOCIALES_CIUDADANAS_PUNT),
-            Prop_Estrato1 = sum(`1`),
-            Prop_Estrato2 = sum(`2`),
-            Prop_Estrato3 = sum(`3`),
-            Prop_Estrato4 = sum(`4`),
-            Prop_Estrato5 = sum(`5`),
-            Prop_Estrato6 = sum(`6`),
-            Prop_Calendario_A = sum(`Calendario_A`),
-            Prop_Calendario_B = sum(`Calendario_B`),
-            Prop_Calendario_F = sum(`Calendario_flexible`),
-            N_d = n())
-
-Tamanos <- Infoaux[,c("NATURALEZA", "N_d")]
-names(Infoaux)
-Medias <- Infoaux[,c("NATURALEZA", "Prom_SOCIALES_CIUDADANAS_PUNT",
-                     "Prop_Estrato2", "Prop_Estrato3", "Prop_Estrato4", "Prop_Estrato5", "Prop_Estrato6", 
-                     "Prop_Calendario_B", "Prop_Calendario_F")]
-
-Tamanos$NATURALEZA <- as.character(Tamanos$NATURALEZA)
-Medias$NATURALEZA <- as.character(Medias$NATURALEZA)
-muestraXest$NATURALEZA <- as.character(muestraXest$NATURALEZA)
-
-BHF <- pbmseBHF(CIENCIAS_NATURALES_PUNT ~ SOCIALES_CIUDADANAS_PUNT + FINS_ESTRATOVIVIENDAENERGIA + CALENDARIO, 
-                dom = NATURALEZA, 
-                meanxpop = Medias,
-                popnsize = Tamanos,
-                B = 200, data = muestraXest)
-
-# Estimaci�n para dominios observados
-BHF$est$eblup
-estima_total <- sum(BHF$est$eblup$eblup)
-
-# Estimaci�n del error cuadr�tico medio
-BHF$mse
-
-# cve
-sqrt(sum(BHF$mse$mse)) / sum(BHF$est$eblup$eblup) * 100
-
-sum(est$CIENCIAS_NATURALES_PUNT)
-
-
-#********************************************************************
-
-
-
-
 # 5. ESTIMADOR DOMINIOS DEL TOTAL DEL PUNTAJE CIENCIAS NATURALES ####
 #********************************************************************
 
 real_dominios_tot <- aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, data=est, FUN=sum)
-
 saveRDS(real_dominios_tot, "./rds/real_dominios_tot.rds")
 
 #********************************************************************
-# 5.1. ESTIMADOR DOMINIOS DEL TOTAL DIRECTO ####
+# 5.1. ESTIMADOR DIRECTO DEL TOTAL POR DOMINIOS ####
 #********************************************************************
 
 # Dominio: Naturaleza
 
 est_dir_toto <- as.data.frame(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_muestral, FUN = svytotal))[,c(2,3)]
 est_dir_toto$cve <-100 * cv(svyby(~CIENCIAS_NATURALES_PUNT, ~NATURALEZA, diseno_muestral, FUN = svytotal))
+est_dir_toto
 saveRDS(est_dir_toto, "./rds/est_dir_toto.rds")
-
 aggregate(CIENCIAS_NATURALES_PUNT ~ NATURALEZA, data=est, FUN=sum)
 
 
 #********************************************************************
-# 5.2. ESTIMADOR DOMINIOS DEL TOTAL MEDIA SINTÉTICO ####
+# 5.2. ESTIMADOR SINTÉTICO DEL TOTAL POR DOMINIOS ####
 #********************************************************************
 
 # Dominio: NATURALEZA

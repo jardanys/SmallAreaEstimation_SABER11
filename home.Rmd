@@ -11,7 +11,9 @@ output: html_document
 
 <br/>
 
+<div class=text-justify>
 Todo el contenido (datos, scripts, resultados etc) de esta presentación puede detallarse en el repositorio disponible en el siguiente [enlace](https://github.com/jardanys/SmallAreaEstimation_SABER11). Los datos utilizados están disponibles en formato RDS.
+</div>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -37,8 +39,12 @@ options(survey.lonely.psu="adjust")
 <br/><br/>
 
 ## Las pruebas Saber 
+
 <br/>
+
+<div class=text-justify>
 El examen de Estado de la educación media, Icfes Saber 11°, surgió en 1968 con el propósito de apoyar a las instituciones de educación superior en sus procesos de selección y admisión de estudiantes y en la década de los ochenta llegó a evaluar a todos los estudiantes de undécimo grado. Dicha prueba es diseñada por el Instituto Colombiano para la Evaluación de la Educación, conocido por las siglas ICFES (de Instituto Colombiano para el Fomento de la Educación Superior), el cual comprueba el grado de desarrollo de las competencias de los estudiantes que están por finalizar el grado undécimo de la Educación Media. Consta de cinco pruebas:
+</div>
 
 * Lectura crítica
 * Matemáticas
@@ -46,13 +52,15 @@ El examen de Estado de la educación media, Icfes Saber 11°, surgió en 1968 co
 * Ciencias naturales
 * Inglés
 
-Los objetivos de este examen se resumen en los siguientes: 
+Los objetivos de este examen se resumen en: 
 
  * Seleccionar estudiantes para la educación superior.
  * Monitorear la calidad de la formación que ofrecen los establecimientos de educación media.
  * Producir información para la estimación del valor agregado de la educación superior.
 
+<div class=text-justify>
 El examen se ha centrado en la evaluación de competencias entendidas como un saber hacer en contexto, lo cual implica que se movilicen conocimientos y habilidades ante distintas situaciones de evaluación. Aquellas se definen en correspondencia con los Estándares Básicos de Competencias del Ministerio de Educación Nacional y los requerimientos de formación en la Educación Superior.
+</div>
 
 Este examen proporciona resultados e información a distintos niveles:
 
@@ -65,11 +73,14 @@ Este examen proporciona resultados e información a distintos niveles:
 
 ## Estudio de caso
 <br/>
+
+<div class=text-justify>
 El ICFES ha disponibilizado el acceso a los resultados de la pruebas a través de su sistema [FTP](http://www.icfes.gov.co/itemlist/category/333-acceso-a-bases-de-datos). En él describe el contenido de las bases de datos, los documentos de apoyo y cómo consultarlos, los análisis que se pueden hacer e información que es fundamental tener en cuenta al momento de utilizar estos en investigaciones.
 
 Este documento tiene como objetivo lograr estimaciones los mas acertadas posible, de los resultados particulares sobre la prueba específica para **Ciencias naturales** sobre algunos dominios de interés, a partir de la aplicación de diferentes métodos de estimación por muestreo, incluyendo muestreo de áreas pequeñas 'SAE'. Definiremos a nuestra población de estudio, como el resultado de las pruebas para un periodo particular. 
 
 Para lograr nuestro objetivo primero nos concentramos en obtener una muestra copleja estratificada. Segundo se estima el promedio global por los sigueintes métodos de estimación:
+</div>
 
 - Estimación Directa.
 - Estimación Sintética.
@@ -78,17 +89,9 @@ Para lograr nuestro objetivo primero nos concentramos en obtener una muestra cop
 - Estimación GREG.
 - Estimación HBF.
 
-Tercero se estima el promedio de los resultados de las pruebas específicas para Ciencias Naturales por dominios, de la siguiente manera:
-
-- Estimación Directa: dominio definido por la naturaleza del colegio (oficial / No oficial).
-- Estimación Sintético: dominio definido por la naturaleza del colegio.
-- Estimación por Razón: Usando como variable auxiliar el resultado poblacional de las pruebas Sociales y ciudadanas.
-- Estimación Post-Estratificado: se define 'Naturaleza_Estrato' como variable de Post-Estratificación .
-- Estimación GREG: Usando como variable auxiliar el resultado poblacional de las pruebas de Matemáticas.
-- Estimación HBF: dominio definido por el municipio del colegio.
-
-Cuarto se estima el global de la variable Ciencias naturales por los métodos de estimación mencionados anteriormente y por último se estima el global de Ciencias Natuales por dominios en el mismo orden del tercer item. Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. Todos los métodos muestran mejor coeficiente de variación respecto al 
-estimador directo.
+<div class=text-justify>
+Tercero se estima el promedio de los resultados de las pruebas específicas para Ciencias Naturales por dominios, con algunas consideraciones que detallarán mas adelante. Cuarto se estima el global de la variable Ciencias naturales por los métodos de estimación mencionados anteriormente y por último se estima el global de Ciencias Natuales por dominios en el mismo orden del tercer item. Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. Todos los métodos muestran mejor coeficiente de variación respecto al estimador directo.
+</div>
 
 En general, los datos disponibles están descritos bajo las siguientes variables:
 
@@ -102,6 +105,8 @@ names(muestraXest)
 
 ## 1. Definición de la muestra
 <br/>
+
+<div class=text-justify>
 La población cuenta con los resultados para 535.254 estudiantes de los diferentes colegios del territorio colombiano, sobre la cual se ha definido un diseño muestral complejo de 3 etapas. Se han tomado los municipios como unidad primaria de muestreo, sobre los cuales se ha construído una estratificación óptima a partir del método Lavallee-Hidiroglou generalizado, usando el número de estudiantes como variable de estratificación y con un coeficiente de variación objetivo de 0.03. Sobre cada estrato se ha seleccionado una muestra de unidades aleatorio simple sin reemplazamiento (MAS).
 
 En la segunda etapa se toman los colegios como unidad secundaria de muestreo, sobre el cual se aplicó una estratificación Lavallee-Hidiroglou generalizado, con el número de colegios por municipio y el estrato anterior como variable de estratificación. Sobre cada estrato resultante se aplica MAS.
@@ -111,6 +116,7 @@ Por último se define como unidad terciaria a los estudiantes, cuya selección r
 El desarrollo total de la muestra puede detallarse en el script [Diseño_Muestral_EC1.R](https://github.com/CamiloAguilar/SmallAreaEstimation_SABER11/blob/master/Diseno_Muestral_EC1.R) disponible en el repositorio web.
 
 Finalmente la muestra obtenida, contiene resultados para 5.556 estudiantes, a partir de los cuales en adelante se desarrollarán las esimaciones mencionadas anteriormente. A continuación podemos observar la distribución de la variable de interés tanto en la población como en la muestra, lo que en principio podría tomarse como una prueba gráfica calidad de la muestra seleccionada:
+</div>
 
 ```{r hist, echo=FALSE}
 par(mfrow=c(1,2))
@@ -122,13 +128,17 @@ hist(muestraXest$CIENCIAS_NATURALES_PUNT, xlab = "Puntaje Ciencias Naturales", y
 
 ## 2. Estimación global del promedio 
 
+<div class=text-justify>
 En este punto estamos interesados en realizar una estimación global, lo más precisa posible, del promedio del puntaje obtenido para la prueba específica en <b>Ciencias naturales</b>. Para ello, se ha realizado el proceso de estimación haciendo uso de diferentes métodos.
+</div>
 
 ```{r poblacion, echo=FALSE}
 m<-mean(est$CIENCIAS_NATURALES_PUNT)
 ```
 
+<div class=text-justify>
 Dado que el presente trabajo representa un ejercicio didáctico, resulta particularmente conveniente contrastar los resultados de las estimaciones frente a los resultados reales, lo que en consecuencia servirá como medida de ajuste de los resultados para cada uno de los métodos de utilizados. El valor Real global del promedio de la variable Ciencias naturales es `r round(m, 3)`
+</div>
 
 En particular, para cada estimación se tuvieron las siguientes consideraciones:
 
@@ -174,19 +184,23 @@ kable(p, "html") %>%
 
 <br/><br/>
 
+<div class=text-justify>
 Nótese en la tabla los resultados agregados de las estimaciones relacionadas en los numerales anteriores, sobre el puntaje medio global obtenido para la prueba de Ciencias naturales. 
 
 Para todos los casos podemos observar un muy buena estimación frente a la media global real, con un un coeficiente de variación inferior al 3%. 
 
 En éste ejercicio se obtiene el mejor resultado utilizando el _estimador de razón_, que coindice con el menor cve.
+</div>
 
 <br/><br/>
 
 ## 3. Estimación del promedio por Dominios 
 
+<div class=text-justify>
 Nos concentramos ahora en obtener estimaciones sobre algunos segmentos particulares y que resultan de nuestro interés. Definimos la __Naturaleza del colegio__, como el dominio sobre el cuál obtendremos los resultados estimados del puntaje promedio. Realizamos el proceso evaluación haciendo uso de los mismos métodos que utilizamos para las estimaciones globales y nuevamente realizamos contraste de los resultados frente a los valores reales poblacionales.
 
 Puesto que realizamos estimaciones para sobre el mismo dominio, resulta conveniente agregar en la misma tabla los resultados para las estimaciones directa, sintética, de razón y GREG. Las consideraciones resultan ser equivalentes a las trabajadas en el numeral anterior.
+</div>
 
 <br/>
 
@@ -236,15 +250,19 @@ kable(p3, "html", align = "c") %>%
 
 <br/><br/>
 
+<div class=text-justify>
 En estos resultados es notable que el estimador sintético presenta falencias considerables respecto a los demás métodos, lo que puede detallarse en el coeficiente de variación y la diferencia de la estimación frente al resultado real poblacional. 
 
 Los demás estimadores presentan un ajuste bastante bueno, en particular el estimador de razón, que presenta un coeficiente de variación de apenas 0.525 y 0.957 para los colegios oficiales y los no oficiales, respectivamente. Resulta importante resaltar que el resultado pone en evidencia que el resultado medio para las pruebas específicas en ciencias naturales es mas favorable para los colegios privados. 
+</div>
 
 <br/><br/>
 
 * __Estimador Post-estratificado por dominios__
 
+<div class=text-justify>
 De la misma forma que en el numeral anterior, se utilizó la variable Naturaleza (Oficial-No Oficial) como dominio y la variable EstratoEnergia (del 1 al 6) como Post-Estrato.
+</div>
 
 ```{r estra_dom, echo=FALSE}
 p3.4.0 <- est %>% group_by(NATURALEZA, FINS_ESTRATOVIVIENDAENERGIA) %>%
@@ -267,9 +285,11 @@ kable(p3.4.0, "html") %>%
 
 * __Estimador HBF del promedio por dominios__
 
+<div class=text-justify>
 Para la estimación HBF se utilizó el dominio definido por los Municipios. La varibale dependiente es Ciencias naturales y las variables independientes son la mismas definidas en el estimador HBF del numeral anterior.
 
 La siguiente tabla, muestra los resultados para los 1070 municipios del territorio colombiano, entre los cuales se encuentran los 28 que fueron incluídos en la muestra.
+</div>
 
 ```{r HBF_table_dom, echo=FALSE}
 p3.6 <- readRDS("./rds/Resultados_BHF.rds")
@@ -280,7 +300,9 @@ kable(p3.6, "html") %>%
 ```
 <br>
 
+<div class=text-justify>
 La gráfica a continuación facilita la visualización de los coeficientes de variación para cada uno de los municipios, notando que en general, las estimaciones resultan ser bastante acertadas:
+</div>
 
 ```{r HBF_table_dom_, echo=FALSE}
 plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve", 
@@ -288,7 +310,14 @@ plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve",
 ```
 <br>
 
-## 4. Estimador global del puntaje de Ciencias Naturales 
+## 4. Estimador global del puntaje total 
+
+<div class=text-justify>
+Hasta el  momento hemos logrado hacer estimaciones bastante buenas de la media del puntaje logrado por los estudiantes para las pruebas de ciencias naturales. Ahora nuestro objetivo será estimar con la mayor precisión posible el puntaje total logrado, o lo que es lo mismo, la suma de los puntajes obtenidos por los estudiantes.
+
+Para ello hemos utilizado los mismos tipos de estimadores, obteniendo los siguientes resultados
+</br>
+
 
 El valor Real global de la variable Ciencias naturales es (Este valor es una guia para determinar las estimaciones de este documento):
 
