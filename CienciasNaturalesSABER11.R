@@ -670,7 +670,7 @@ Resultados$cve <- 100 * sqrt(Resultados$MSE) / Resultados$Yhat_BHF
 head_resultados_HBF <- head(Resultados)
 
 saveRDS(head_resultados_HBF, "./rds/head_resultados_HBF.rds")
-saveRDS(Resultados, "./rds/Resultados.rds")
+saveRDS(Resultados, "./rds/Resultados_BHF.rds")
 
 mean(Resultados$Yhat_BHF)
 mean(Resultados$cve)
