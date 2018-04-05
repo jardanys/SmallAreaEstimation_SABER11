@@ -1070,7 +1070,7 @@ hatX <- estimaGlobal_sociales[,2]
 names(hatX) <- estimaGlobal_sociales[,1]
 
 X_U <- aggregate(SOCIALES_CIUDADANAS_PUNT ~ NATURALEZA, FUN = sum, data = est)
-X_U_ <- sort(X_U$SOCIALES_CIUDADANAS_PUNT, decreasing = T)
+X_U_ <- sort(X_U$SOCIALES_CIUDADANAS_PUNT, decreasing = F)
 names(X_U_) <- estimaGlobal_sociales[,1]
 
 # Estimador de razón
@@ -1088,6 +1088,7 @@ Var_Y_ratio <- X_U_^2 * SE(svyby(~CIENCIAS_NATURALES_PUNT, by=~NATURALEZA,
 cve=sqrt(Var_Y_ratio) / Y_ratio * 100
 
 est_razon_tot_dom <- data.frame(Total=Y_ratio, cve=cve)
+est_razon_tot_dom
 saveRDS(est_razon_tot_dom, "./rds/est_razon_tot_dom.rds")
 
 

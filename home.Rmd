@@ -370,7 +370,8 @@ En éste ejercicio se obtiene el mejor resultado utilizando el _estimador de raz
 
 <br/><br/>
 
-## 5. Estimación del total por Dominios 
+
+## 5. Estimador del total por dominios 
 
 <div class=text-justify>
 Nuevamente definimos la __Naturaleza del colegio__, como el dominio sobre el cuál obtendremos los resultados estimados del puntaje total. Realizamos el proceso evaluación haciendo uso de los mismos métodos que utilizamos para las estimaciones globales y nuevamente realizamos contraste de los resultados frente a los valores reales poblacionales.
@@ -414,11 +415,12 @@ Of <- as.numeric(p5.0[p5.0$NATURALEZA=="Oficial",3])
 
 p5 <- rbind(p5.0, p5.1, p5.2, p5.3, p5.5)
 p5 <- p5 %>% select(NATURALEZA, Resultado, total, cve) %>% arrange(NATURALEZA) %>%
-      mutate(Diferencia = round(ifelse(NATURALEZA=="Oficial", total - Of, total - NOf), 3))
+      mutate(Diferencia = round(ifelse(NATURALEZA=="Oficial", total - Of, total - NOf), 0),
+             total=round(total))
 
 
 kable(p5, "html", align = "c") %>%
-  kable_styling("striped", full_width = F, position = "float_left") %>%
+  kable_styling("striped", full_width = F, position = "float_right") %>%
   column_spec(1, bold = T) %>%
   collapse_rows(columns = 1) %>%
   row_spec(c(1,6), bold = T, color = "white", background = "darkgray")
@@ -429,7 +431,7 @@ kable(p5, "html", align = "c") %>%
 <br/><br/>
 
 <div class=text-justify>
-En estos resultados es notable que el estimador sintético presenta falencias considerables respecto a los demás métodos, lo que puede detallarse en el coeficiente de variación y la diferencia de la estimación frente al resultado real poblacional. 
+En estos resultados es notable que....... el estimador sintético presenta falencias considerables respecto a los demás métodos, lo que puede detallarse en el coeficiente de variación y la diferencia de la estimación frente al resultado real poblacional. 
 
 Los demás estimadores presentan un ajuste bastante bueno, en particular el estimador de razón, que presenta un coeficiente de variación de apenas 0.525 y 0.957 para los colegios oficiales y los no oficiales, respectivamente. Resulta importante resaltar que el resultado pone en evidencia que el resultado medio para las pruebas específicas en ciencias naturales es mas favorable para los colegios privados. 
 </div>
@@ -489,7 +491,6 @@ plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve",
 <br>
 
 
-
 ## 6. Conclusiones
 
 - Se realiaron estimaciones de la variable Ciencias Naturales por diferentes métodos, tanto para la variable global como por dominios. Para mejorar las estimaciones en la mayoria dependen de las variables auxiliares disponibles y su represtabilidad respecto a la variable de medición. 
@@ -501,29 +502,5 @@ plot(readRDS("./rds/Resultados_BHF.rds")$cve, xlab = "Municipios", ylab = "cve",
 - Se observa que los métodos que utilizan modelación estadistica como el GREG y HBF tienen un mejor coeficiente de variación. 
 
 - Todos los métodos muestran mejor cve que el estimador directo.
-
-
-## APÉNDICE
-
-* Tabla de correlación entre puntajes:
-```{r APENDIXcorre, echo=FALSE}
-kable(readRDS("./rds/corre.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
-
-* Gráfica para el estimador global del promedio GREG se utilizó la variable puntaje de Matematicas como variable auxiliar, realizando un "Diseño Muestrañ Calibrado" linealmente. El coeficiente de variación y el valor estimado por estimación Greg son adecuados, es una estimación confiable como se muestra en la siguiente tabla.
-
-```{r greg, echo=FALSE}
-plot(muestraXest$CIENCIAS_NATURALES_PUNT ~ muestraXest$MATEMATICAS_PUNT, xlab="Matemáticas",
-     ylab = "Ciencias Naturales", main = "Ciencias Naturales vs Matemáticas", col="orange")
-abline(readRDS("./rds/mod1_mue_greg_mean.rds"), col="red")
-```
-
-* Correlación del 3.3   La variable continua con mayor correlación es el puntaje de Sociales, como se observa en la siguiente tabla. Por tanto esta variable se utiliza como auxiliar para estimar el puntaje global promedio de Ciencias Naturales por dominios: Naturaleza.
-
-```{r corre_dom, echo=FALSE}
-kable(readRDS("./rds/corre.rds"), "html") %>%
-  kable_styling("striped", full_width = F, position = "center")
-```
 
 
